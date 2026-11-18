@@ -1,0 +1,792 @@
+<!doctype html>
+<html lang="uk"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Довіра — цифрові послуги</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#111;--blue:#3A86FF;--gold:#FFBE0B;--mut:#6b7480;--ln:#e3e7eb}
+*{box-sizing:border-box;margin:0;font-family:inherit}
+body{font:15px/1.45 'Plus Jakarta Sans',system-ui,sans-serif;background:#F3F5F7;color:var(--ink);min-height:100vh}
+body:before{content:"";position:fixed;inset:0;z-index:-1;background:radial-gradient(60% 40% at 15% 8%,#E2ECF5,transparent),radial-gradient(50% 40% at 90% 85%,#F5EFE6,transparent)}
+#app{max-width:448px;margin:0 auto;min-height:100vh;padding:0 16px 96px}#app.wide{max-width:1100px;padding-bottom:40px}
+.top{display:flex;justify-content:space-between;align-items:center;padding:16px 0}
+.logo{font-weight:800;font-size:30px;letter-spacing:-.5px}.logo.sm{font-size:22px}
+h1{font-size:34px;line-height:1.1;letter-spacing:-1px;margin:28px 0 10px}h2{font-size:24px;letter-spacing:-.5px;margin:6px 0 14px}.ua,.mut,small{color:var(--mut)}.ua{font-weight:500;font-size:16px}
+.btn{display:block;width:100%;padding:15px;border:0;border-radius:999px;background:var(--ink);color:#fff;font-weight:700;font-size:15px;cursor:pointer;transition:transform .15s}
+.btn:active{transform:scale(.97)}.btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--ln);margin-top:10px}.btn.sm{width:auto;padding:8px 16px;font-size:13px;display:inline-block;margin:0}
+input,select,textarea{width:100%;padding:14px 18px;border:1px solid var(--ln);border-radius:999px;background:#fff;font-size:15px;margin-bottom:10px}
+textarea{border-radius:24px;min-height:80px}input[type=checkbox]{width:auto;margin:0 8px 0 0}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.seg{display:flex;background:#e6eaee;border-radius:999px;padding:4px;margin:18px 0}.seg.sm{margin:0}
+.seg button{flex:1;border:0;background:none;padding:9px 14px;border-radius:999px;font-weight:600;cursor:pointer;font-size:13px;white-space:nowrap}.seg .on{background:var(--ink);color:#fff}
+.or{text-align:center;color:var(--mut);margin:14px 0 4px}.hint{font-size:12px;color:var(--mut);text-align:center;margin-top:16px}
+.box{background:#fff;border-radius:28px;padding:18px;margin-bottom:12px;box-shadow:0 6px 22px rgba(30,50,80,.07)}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:700;background:#e6eaee}
+.pill.issued,.pill.approved,.pill.verified{background:#dcebff;color:#1b5fd1}.pill.pending{background:#fff3cc;color:#8a6200}.pill.rejected,.pill.flagged{background:var(--ink);color:#fff}
+.nav{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);width:calc(100% - 32px);max-width:416px;display:flex;background:#fff;border-radius:999px;padding:6px;box-shadow:0 10px 30px rgba(30,50,80,.18);z-index:5}
+.nav button{flex:1;border:0;background:none;padding:8px 4px;border-radius:999px;font-size:11px;font-weight:600;color:var(--mut);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;transition:all .25s}
+.nav .on{background:var(--ink);color:#fff}.nav svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.deck{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -16px;padding:6px 16px 22px;scrollbar-width:none}
+.slot{position:relative;flex:0 0 92%;scroll-snap-align:center;perspective:1200px}
+.card{position:relative;height:250px;transform-style:preserve-3d;transition:transform .8s cubic-bezier(.3,1.35,.5,1);cursor:pointer}.card.flip{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;border-radius:28px;padding:20px;backface-visibility:hidden;-webkit-backface-visibility:hidden;background:linear-gradient(135deg,#fff 30%,var(--c));box-shadow:0 10px 30px rgba(30,50,80,.13);overflow:hidden;display:flex;flex-direction:column}
+.back{transform:rotateY(180deg);background:#fff;align-items:center;justify-content:center;gap:8px}
+.shim{position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 35%,rgba(255,255,255,.75) 48%,rgba(58,134,255,.12) 52%,transparent 65%);background-size:250% 100%;animation:shim 4.5s ease-in-out infinite}
+@keyframes shim{0%{background-position:150% 0}60%,100%{background-position:-50% 0}}
+.num{font-size:26px;font-weight:800;letter-spacing:1px;margin:auto 0 8px}.kv{display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;font-size:12px}.kv small{display:block;font-size:10px}
+.dots{position:absolute;top:14px;right:16px;z-index:3;width:34px;height:34px;border:0;border-radius:50%;background:rgba(255,255,255,.8);font-weight:800;cursor:pointer}
+.menu{display:none;position:absolute;top:52px;right:16px;z-index:4;background:#fff;border-radius:20px;padding:6px;box-shadow:0 10px 30px rgba(0,0,0,.18);min-width:190px}.menu.open{display:block;animation:up .2s}
+.menu button{display:block;width:100%;text-align:left;padding:10px 14px;border:0;background:none;border-radius:14px;font-size:14px;cursor:pointer}.menu button:hover{background:#f1f4f7}
+.qr{width:128px;height:128px}.qr svg{width:100%;height:100%}.bar{width:150px;height:30px}.tm{font-weight:800;font-variant-numeric:tabular-nums;color:var(--blue)}
+.pills{display:flex;gap:8px;overflow-x:auto;margin:4px 0 14px;scrollbar-width:none}.pills button{border:1px solid var(--ln);background:#fff;border-radius:999px;padding:8px 14px;font-weight:600;font-size:13px;white-space:nowrap;cursor:pointer}.pills .on{background:var(--ink);color:#fff}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sv{text-align:left;background:#fff;border:0;border-radius:28px;padding:16px;cursor:pointer;display:flex;flex-direction:column;gap:4px;box-shadow:0 6px 22px rgba(30,50,80,.07);transition:transform .2s cubic-bezier(.3,1.5,.5,1)}.sv:active{transform:scale(.96)}
+.sv i{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-weight:800;margin-bottom:6px}
+.empty{grid-column:1/-1;text-align:center;color:var(--mut);padding:30px 10px}
+.sk{height:72px;border-radius:28px;margin-bottom:10px;background:linear-gradient(90deg,#e8ecf0,#f6f8fa,#e8ecf0);background-size:200% 100%;animation:sk 1.2s infinite}@keyframes sk{to{background-position:-200% 0}}
+.mo{position:fixed;inset:0;background:rgba(17,17,17,.4);display:flex;align-items:flex-end;justify-content:center;z-index:20}
+.sheet{background:#F3F5F7;width:100%;max-width:480px;max-height:90vh;overflow:auto;border-radius:32px 32px 0 0;padding:24px}.sheet,.toast{animation:up .35s cubic-bezier(.3,1.3,.5,1)}@keyframes up{from{transform:translateY(30px);opacity:0}}
+.steps{display:flex;gap:6px;margin:10px 0 16px}.steps b{flex:1;height:4px;border-radius:4px;background:#d5dbe1}.steps .on{background:var(--ink)}
+.toast{position:fixed;top:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 20px;border-radius:999px;z-index:50;font-weight:600;font-size:14px}
+.pin{text-align:center;padding-top:60px}.pd{display:flex;gap:14px;justify-content:center;margin:24px 0}.pd i{width:16px;height:16px;border-radius:50%;border:2px solid var(--ink)}.pd .on{background:var(--ink)}
+.kp{display:grid;grid-template-columns:repeat(3,76px);gap:14px;justify-content:center}.kp button{height:76px;border-radius:50%;border:0;background:#fff;font-size:24px;font-weight:700;cursor:pointer}.kp button:active{background:var(--ink);color:#fff}
+.tools{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.tools input,.tools select{width:auto;flex:1;min-width:160px;margin:0}
+.sc{overflow-x:auto;border-radius:24px}.tbl{width:100%;border-collapse:collapse;background:#fff;font-size:14px}.tbl th{text-align:left;padding:12px 14px;color:var(--mut);font-size:12px;border-bottom:1px solid var(--ln)}.tbl td{padding:11px 14px;border-bottom:1px solid #f0f2f4;white-space:nowrap}.tbl tr:hover td{background:#f8fafc}
+.flag{background:#fff8e1;border:1px solid var(--gold)}.field-error{color:#c62828!important;display:block;margin:-6px 8px 10px;font-size:12px}.invalid{border-color:#c62828!important}
+.stats{display:flex;gap:10px;margin-bottom:12px}.stats .box{flex:1;margin:0}.stats b{font-size:26px;display:block}
+button{color:inherit}
+.qr{width:140px;height:140px}.qr svg{border-radius:8px}.vi{width:64px;height:64px;border-radius:50%;margin:0 auto 12px;display:grid;place-items:center;font-size:30px;font-weight:800;background:#ffe9a8;color:#111}.vi.ok{background:#dcebff;color:#1b5fd1}
+.face{color:#111}.face small{color:#6b7480}.dots{color:#111}
+.deck{position:relative;user-select:none;cursor:grab}.deck::-webkit-scrollbar{display:none}
+.dw{position:relative}.arr{position:absolute;top:110px;z-index:4;width:40px;height:40px;border:0;border-radius:50%;background:#fff;color:#111;box-shadow:0 6px 18px rgba(0,0,0,.2);font-size:24px;line-height:1;cursor:pointer;transition:transform .2s}.arr:hover{transform:scale(1.1)}.arr.l{left:-8px}.arr.r{right:-8px}
+.dn{display:flex;gap:8px;justify-content:center;margin:-8px 0 12px}.dn button{width:8px;height:8px;border:0;border-radius:8px;background:#c4ccd4;cursor:pointer;padding:0;transition:all .25s}.dn .on{width:24px;background:var(--ink)}
+.ph{position:absolute;right:20px;top:56px;width:62px;height:78px;border-radius:14px;overflow:hidden;z-index:1}
+.avs{display:inline-block;vertical-align:middle;width:34px;height:34px;border-radius:50%;overflow:hidden;margin-right:10px;flex:none;font-size:13px}.avs.lg{width:64px;height:64px;margin:0;font-size:20px}
+.avs img,.ph img{width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit}
+.av{display:grid;place-items:center;width:100%;height:100%;font-weight:800;color:#111;background:#dbe8f8;border-radius:inherit;font-size:inherit}
+.sv:hover{transform:translateY(-2px)}.btn:hover{opacity:.88}.pills button:hover,.seg button:hover{opacity:.8}
+@media(hover:none){.arr{display:none}}
+[data-theme=dark]{color-scheme:dark;--ink:#f2f4f7;--mut:#98a2b0;--ln:#2b3139}
+[data-theme=dark] body{background:#0d0f12}
+[data-theme=dark] body:before{background:radial-gradient(60% 40% at 15% 8%,#14253a,transparent),radial-gradient(50% 40% at 90% 85%,#2a2214,transparent)}
+[data-theme=dark] :where(.box,.sv,.nav,.menu,.tbl,input,select,textarea,.arr){background:#1a1d22;color:var(--ink)}
+[data-theme=dark] :where(.btn,.toast){color:#111}
+[data-theme=dark] .btn.ghost{background:#1a1d22}
+[data-theme=dark] .sheet{background:#13161a}[data-theme=dark] .flag{background:#2a2312}
+[data-theme=dark] .seg,[data-theme=dark] .pill{background:#262b32}
+[data-theme=dark] .seg .on,[data-theme=dark] .nav .on,[data-theme=dark] .pills .on,[data-theme=dark] .pill.rejected,[data-theme=dark] .pill.flagged,[data-theme=dark] .kp button:active{color:#111}
+[data-theme=dark] .pill.issued,[data-theme=dark] .pill.approved,[data-theme=dark] .pill.verified{background:#16304f;color:#8ab8ff}
+[data-theme=dark] .pill.pending{background:#3a2f10;color:#ffd666}
+[data-theme=dark] .pills button:not(.on),[data-theme=dark] .kp button:not(:active){background:#1a1d22}
+[data-theme=dark] .steps b:not(.on){background:#2b3139}[data-theme=dark] .dn button:not(.on){background:#3a424c}
+[data-theme=dark] .menu button:hover{background:#262b32}
+[data-theme=dark] .tbl td{border-color:#242930}[data-theme=dark] .tbl tr:hover td{background:#20242a}
+[data-theme=dark] .sk{background:linear-gradient(90deg,#1a1d22,#242930,#1a1d22);background-size:200% 100%}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ============ desktop / PC responsive layout ============ */
+@media (min-width:768px){
+  #app{width:min(100% - 64px,1180px);max-width:1180px;padding:0 0 56px}
+  #app.wide{width:min(100% - 64px,1440px);max-width:1440px;padding-bottom:48px}
+  .top{gap:14px;justify-content:flex-start;padding:22px 0 28px;flex-wrap:wrap}
+  .top .logo{margin-right:auto}
+  h1{font-size:clamp(42px,5vw,60px);max-width:760px;margin:48px 0 14px}
+  #app:not(.wide)>.top~h1,#app:not(.wide)>.top~p{max-width:760px}
+  #af{max-width:560px;display:grid;grid-template-columns:1fr 1fr;gap:0 12px;align-items:start}
+  #af input,#af select,#af small,#af .hint{grid-column:1/-1}
+  #af .btn{grid-column:1/-1;justify-self:start;min-width:190px}
+  .or{max-width:560px;text-align:left;margin:20px 0 10px}
+  #app:not(.wide)>.btn{display:inline-flex;width:auto;min-width:220px;margin:0 10px 10px 0}
+  .hint{max-width:560px;text-align:left}
+  #main{min-width:0}
+  #main>.grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+  .sv{min-height:150px;padding:20px}
+  .deck{margin:0;padding:10px 0 26px;justify-content:center;overflow-x:auto}
+  .slot{flex:0 0 min(440px,46%);max-width:440px}
+  .card{height:270px}
+  .nav{position:sticky;left:auto;bottom:auto;transform:none;width:min(100%,620px);max-width:620px;margin:28px auto 0}
+  .nav button{font-size:12px;padding:10px}
+  .mo{align-items:center;padding:28px}
+  .sheet{width:min(100%,680px);max-width:680px;max-height:min(86vh,900px);border-radius:28px;padding:30px}
+  .sheet>.btn{width:auto;min-width:130px;margin:10px 8px 0 0}
+  .sheet input,.sheet select,.sheet textarea{max-width:100%}
+  .tools{align-items:center}
+  .tools input{flex:1 1 280px;max-width:420px}
+  .tools select{flex:0 1 220px;max-width:240px}
+  .tools .btn{flex:0 0 auto}
+  .stats{max-width:760px}
+  .stats .box{min-width:180px}
+  .box{padding:22px}
+  .row>.btn{flex:0 0 auto}
+  .btn:not(.sm){display:inline-flex;width:auto;min-width:148px;max-width:100%;align-items:center;justify-content:center;white-space:normal}
+  .btn.ghost{margin-top:0}
+  .menu .btn,.nav .btn{width:100%}
+  .seg{width:max-content;max-width:100%}
+  .seg button{flex:0 0 auto}
+  .sc{max-width:100%}
+}
+@media (min-width:1100px){
+  #main>.grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .stats{gap:16px}
+  .box{border-radius:24px}
+  .admin-layout,.dashboard-grid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(280px,1fr);gap:18px}
+}
+@media (max-width:767px){
+  .btn:not(.sm){width:100%}
+  .sheet>.btn{width:100%}
+}
+
+</style><script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.12/pdfmake.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.12/vfs_fonts.js"></script></head><body><div id="app"></div><div id="modal"></div>
+<script>
+/* ============ CONFIG: switch backend here ============ */
+const DB_PROVIDER='local';                 // 'local' | 'supabase'
+const SUPA={url:'',key:''};                // Supabase project URL + anon key (when DB_PROVIDER='supabase')
+
+/* ============ helpers ============ */
+const $=s=>document.querySelector(s),mem={};
+const st={get(k){try{return localStorage.getItem(k)}catch(e){return mem[k]??null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){mem[k]=v}},del(k){try{localStorage.removeItem(k)}catch(e){delete mem[k]}}};
+const jget=(k,d)=>{try{return JSON.parse(st.get(k))??d}catch(e){return d}};
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const toast=m=>{const t=document.createElement('div');t.className='toast';t.textContent=translateString(m);document.body.append(t);setTimeout(()=>t.remove(),2400)};
+const rng=s=>()=>{s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
+const hash=s=>{let h=2166136261;for(const c of String(s)){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0};
+const toB64=b=>btoa(String.fromCharCode(...new Uint8Array(b)));
+const fromB64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+const randomBytes=n=>crypto.getRandomValues(new Uint8Array(n));
+async function deriveSecret(secret,salt,iterations=210000){
+ const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(String(secret)),'PBKDF2',false,['deriveBits']);
+ return toB64(await crypto.subtle.deriveBits({name:'PBKDF2',salt,iterations,hash:'SHA-256'},key,256));
+}
+async function hashPassword(password,salt=randomBytes(16)){return{salt:toB64(salt),hash:await deriveSecret(password,salt)}}
+async function verifyPassword(password,salt,expected){try{return(await deriveSecret(password,fromB64(salt)))===expected}catch{return false}}
+async function hashPin(pin,salt=randomBytes(16)){return{salt:toB64(salt),hash:await deriveSecret(pin,salt,120000)}}
+const ago=t=>{const s=Math.floor((Date.now()-t)/1e3);return s<10?'щойно':s<60?s+' с тому':Math.floor(s/60)+' хв тому'};
+const skel=n=>'<div class="sk"></div>'.repeat(n);
+const download=(name,txt,type)=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([txt],{type}));a.download=name;a.click()};
+
+/* ============ data model + deterministic generator (1,200 citizens) ============ */
+/** Citizen {id,name,surname,email,pass,role,dob,taxId,passport,license,city,vehicle:{plate,model},status:'verified'|'pending'|'flagged'}
+ *  ServiceRequest {id,userId,userName,serviceId,title,status:'pending'|'issued'|'approved'|'rejected',note,serial,createdAt} */
+const FN=['Олена','Андрій','Марія','Іван','Софія','Тарас','Наталія','Олег','Дарина','Максим','Ірина','Богдан','Юлія','Сергій','Анна','Владислав'];
+const LN=['Коваленко','Шевченко','Бондаренко','Ткаченко','Мельник','Кравчук','Олійник','Гончар','Мороз','Лисенко','Савченко','Петренко','Руденко','Павленко'];
+const CITY=['Київ','Одеса','Львів','Харків','Дніпро','Івано-Франківськ','Чернівці','Вінниця'];
+const CARS=['Škoda Octavia','Renault Duster','Toyota Corolla','VW Golf','Nissan Leaf','Hyundai Tucson'];
+const yr=y=>y<.1?2008+Math.floor(y*130):1960+Math.floor((y-.1)/.9*43);
+const mk=(i,seed=1000+i)=>{const r=rng(seed),p=a=>a[Math.floor(r()*a.length)],d=n=>Array.from({length:n},()=>Math.floor(r()*10)).join('');
+ const x=r();return{id:'c'+i,name:p(FN),surname:p(LN),email:`user${i}@demo.ua`,pass:'demo1234',role:'citizen',
+ dob:`${yr(r())}-${String(1+Math.floor(r()*12)).padStart(2,'0')}-${String(1+Math.floor(r()*28)).padStart(2,'0')}`,
+ taxId:d(10),passport:d(9),license:'AB'+d(6),city:p(CITY),vehicle:{plate:`AA${d(4)}KX`,model:p(CARS)},status:x<.8?'verified':x<.93?'pending':'flagged',flags:x<.93?[]:[{type:['Під розслідуванням','Ризик шахрайства','Іноземний агент'][Math.floor(r()*3)],reason:'Імпортовано з початкових даних реєстру',at:1700000000000,by:'system'}]}};
+/* ============ SEED USERS: add your own people here ============
+ Omitted fields (tax ID, passport, licence, vehicle...) are generated automatically.
+ photo = image URL, data: URI, or '' for an initials avatar. role = 'citizen' | 'admin'. docs = optional list of card keys: id tax dl veh zp stu pen mil vpo med.
+ Applies to the local database; in Supabase mode insert rows into the users table instead. */
+const CUSTOM_USERS=[
+ {name:'Богдан',surname:'Мазур',email:'bohdan@demo.ua',pass:'demo1234',city:'Одеса',dob:'1992-03-14',role:'citizen',photo:'',docs:['id','tax','mil','med']},
+ {name:'Катерина',surname:'Левченко',email:'kate@demo.ua',pass:'demo1234',city:'Львів',dob:'1988-11-02',role:'admin',photo:'',docs:['id','tax','dl','veh','zp']},
+];
+const customUser=(c,i)=>{const u={...mk(2000+i,hash(c.email)),id:'x'+i,role:'citizen',status:'verified',flags:[],...c};if(ageOf(u)<18)u.docs=(u.docs||startDocs(u)).filter(k=>eligible(u,k,[]).ok);return u};
+const ADMIN={...mk(5000),id:'admin',name:'Адміністратор',surname:'Реєстру',dob:'1985-01-01',email:'admin@demo.ua',pass:'admin1234',role:'admin',status:'verified',flags:[]};
+
+/* ============ DatabaseAdapter (interface): every UI call goes through these methods ============
+ findByEmail(email) getCitizen(id) listCitizens({q,status,page,size}) createCitizen(u) importCitizens(arr)
+ listRequests(userId|null) createRequest(r) updateRequest(id,patch) log(action,detail) exportAll()        */
+const DB_NAME='dovira-store',DB_STORE='records';
+let idbPromise;
+function openIDB(){
+ if(!('indexedDB'in window))return Promise.reject(new Error('IndexedDB недоступна'));
+ if(!idbPromise)idbPromise=new Promise((resolve,reject)=>{
+  const req=indexedDB.open(DB_NAME,1);
+  req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains(DB_STORE))req.result.createObjectStore(DB_STORE)};
+  req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);
+ });
+ return idbPromise;
+}
+async function idbGet(k){const d=await openIDB();return new Promise((resolve,reject)=>{const r=d.transaction(DB_STORE).objectStore(DB_STORE).get(k);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
+async function idbSet(k,v){const d=await openIDB();return new Promise((resolve,reject)=>{const r=d.transaction(DB_STORE,'readwrite').objectStore(DB_STORE).put(v,k);r.onsuccess=()=>resolve();r.onerror=()=>reject(r.error)})}
+async function idbDel(k){const d=await openIDB();return new Promise((resolve,reject)=>{const r=d.transaction(DB_STORE,'readwrite').objectStore(DB_STORE).delete(k);r.onsuccess=()=>resolve();r.onerror=()=>reject(r.error)})}
+const validateCitizen=(u,i=0)=>{
+ const errors=[];
+ if(!u||typeof u!=='object'||Array.isArray(u))return [`Рядок ${i+1}: очікується об’єкт`];
+ for(const k of ['id','taxId','dob','surname','name','passport'])if(typeof u[k]!=='string'||!u[k].trim())errors.push(`Рядок ${i+1}: відсутнє поле ${k}`);
+ if(u.id&&u.id.length>128)errors.push(`Рядок ${i+1}: некоректний id`);
+ if(u.taxId&&!/^\\d{10}$/.test(u.taxId))errors.push(`Рядок ${i+1}: taxId має містити 10 цифр`);
+ if(u.passport&&!/^\\d{9}$/.test(u.passport))errors.push(`Рядок ${i+1}: passport має містити 9 цифр`);
+ if(u.dob&&(!/^\\d{4}-\\d{2}-\\d{2}$/.test(u.dob)||isNaN(Date.parse(u.dob))||new Date(u.dob)>new Date()))errors.push(`Рядок ${i+1}: некоректна дата dob`);
+ if(u.name&&u.name.length>100||u.surname&&u.surname.length>100)errors.push(`Рядок ${i+1}: надто довге ім’я`);
+ return errors;
+};
+class LocalSeedAdapter{
+ constructor(){
+  this.base=null;this.del=new Set();this.extra=[];this.reqs=[];this.logs=[];this.patch={};
+  this.ready=this.load();
+ }
+ async load(){
+  try{
+   const [del,extra,reqs,logs,patch]=await Promise.all(['db_del','db_users','db_reqs','db_logs','db_patch'].map(idbGet));
+   this.del=new Set(del||jget('db_del',[]));this.extra=extra||jget('db_users',[]);this.reqs=reqs||jget('db_reqs',[]);this.logs=logs||jget('db_logs',[]);this.patch=patch||jget('db_patch',{});
+  }catch(e){
+   this.del=new Set(jget('db_del',[]));this.extra=jget('db_users',[]);this.reqs=jget('db_reqs',[]);this.logs=jget('db_logs',[]);this.patch=jget('db_patch',{});
+  }
+ }
+ seed(){
+  if(!this.base){
+   this.base=Array.from({length:1200},(_,i)=>mk(i));
+   this.base[0]={...this.base[0],name:'Олена',surname:'Коваленко',email:'olena@demo.ua',status:'verified',flags:[],docs:['id','tax','dl','veh','zp','med'],dob:'1994-04-12',sex:'f'};
+   this.base.push(...CUSTOM_USERS.map(customUser));
+   this.base.forEach(u=>Object.assign(u,this.patch[u.id]));
+   Object.assign(ADMIN,this.patch.admin);
+  }
+  return this.base;
+ }
+ all(){return this.seed().concat(this.extra).filter(u=>!this.del.has(u.id))}
+ async persist(k,v){try{await idbSet(k,v)}catch(e){st.set(k,JSON.stringify(v))}}
+ async findByEmail(e){await this.ready;e=e.toLowerCase();return e==ADMIN.email?ADMIN:this.all().find(u=>u.email===e)||null}
+ async getCitizen(id){await this.ready;return id=='admin'?ADMIN:this.all().find(u=>u.id===id)||null}
+ async listCitizens({q='',status='',page=0,size=15}){await this.ready;q=q.toLowerCase();const m=this.all().filter(u=>(!status||u.status===status)&&(!q||(u.name+' '+u.surname).toLowerCase().includes(q)||(u.taxId||'').includes(q)||(u.passport||'').includes(q)||(u.license||'').toLowerCase().includes(q)));return{rows:m.slice(page*size,page*size+size),total:m.length}}
+ async createCitizen(u){await this.ready;this.extra.push(u);await this.persist('db_users',this.extra);return u}
+ async importCitizens(a){
+  await this.ready;if(!Array.isArray(a))throw new Error('Очікується JSON-масив громадян.');
+  const errors=a.flatMap((u,i)=>validateCitizen(u,i));if(errors.length)throw new Error(errors.slice(0,8).join('; '));
+  const ids=new Set(this.all().map(u=>u.id)),n=a.filter(u=>!ids.has(u.id)).map(u=>{const x={...u};delete x.pass;return x});
+  this.extra.push(...n);await this.persist('db_users',this.extra);return n.length;
+ }
+ async listRequests(uid){await this.ready;return this.reqs.filter(r=>!uid||r.userId===uid)}
+ async createRequest(r){await this.ready;this.reqs.unshift(r);await this.persist('db_reqs',this.reqs);return r}
+ async updateRequest(id,p){await this.ready;const r=this.reqs.find(x=>x.id===id);if(!r)throw new Error('Заявку не знайдено');Object.assign(r,p);await this.persist('db_reqs',this.reqs);return r}
+ async log(action,detail){await this.ready;this.logs.unshift({action,detail,at:Date.now()});await this.persist('db_logs',this.logs.slice(0,200))}
+ async updateCitizen(id,p){await this.ready;const u=id=='admin'?ADMIN:this.all().find(x=>x.id===id);if(!u)throw new Error('Громадянина не знайдено');Object.assign(u,p);this.patch[id]={...this.patch[id],...p};await this.persist('db_patch',this.patch);return u}
+ async listLogs(){await this.ready;return this.logs}
+ async deleteCitizen(id){await this.ready;this.extra=this.extra.filter(u=>u.id!==id);this.del.add(id);this.reqs=this.reqs.filter(r=>r.userId!==id);await Promise.all([this.persist('db_users',this.extra),this.persist('db_del',[...this.del]),this.persist('db_reqs',this.reqs)])}
+ async reset(){await this.ready;try{await Promise.all(['db_users','db_reqs','db_logs','db_patch','db_del'].map(idbDel))}catch(e){['db_users','db_reqs','db_logs','db_patch','db_del'].forEach(k=>st.del(k))}['quick','quickname','theme'].forEach(k=>st.del(k));try{Object.keys(localStorage).filter(k=>/^pin/.test(k)).forEach(k=>st.del(k))}catch(e){}}
+ async exportAll(){await this.ready;return{citizens:this.all(),requests:this.reqs}}
+}
+/* Tables: users, requests, audit_logs — columns mirror the fields above (camelCase, quoted in SQL; vehicle = jsonb).
+   Production note: use Supabase Auth + row-level security instead of the demo `pass` column. */
+class SupabasePostgresAdapter{
+ async q(path,o={}){
+  if(!SUPA.url||!SUPA.key)throw new Error('Налаштуйте SUPA.url і SUPA.key перед використанням Supabase.');
+  try{
+   const r=await fetch(SUPA.url.replace(/\/$/,'')+'/rest/v1/'+path,{...o,headers:{apikey:SUPA.key,Authorization:'Bearer '+SUPA.key,'Content-Type':'application/json',Prefer:'count=exact,return=representation',...o.headers}});
+   const body=await r.text();if(!r.ok)throw new Error(`Supabase ${r.status}: ${body.slice(0,500)}`);
+   let data=[];if(body)try{data=JSON.parse(body)}catch{throw new Error('Supabase повернув некоректний JSON')}
+   return{data,total:+(r.headers.get('content-range')||'*/0').split('/')[1]};
+  }catch(e){throw new Error('Помилка бази даних: '+e.message)}
+ }
+ async findByEmail(e){return(await this.q('users?email=eq.'+encodeURIComponent(e.toLowerCase())+'&limit=1')).data[0]||null}
+ async getCitizen(id){return(await this.q('users?id=eq.'+encodeURIComponent(id))).data[0]||null}
+ async listCitizens({q='',status='',page=0,size=15}){let p=`users?role=eq.citizen&order=surname&limit=${size}&offset=${page*size}`;if(status)p+='&status=eq.'+status;if(q)p+=`&or=(name.ilike.*${q}*,surname.ilike.*${q}*,taxId.like.*${q}*,passport.like.*${q}*,license.ilike.*${q}*)`;const r=await this.q(p);return{rows:r.data,total:r.total}}
+ async createCitizen(u){return(await this.q('users',{method:'POST',body:JSON.stringify(u)})).data[0]}
+ async importCitizens(a){
+  if(!Array.isArray(a))throw new Error('Очікується JSON-масив громадян.');
+  const errors=a.flatMap((u,i)=>validateCitizen(u,i));if(errors.length)throw new Error(errors.slice(0,8).join('; '));
+  const safe=a.map(u=>{const x={...u};delete x.pass;return x});
+  const r=await this.q('users?on_conflict=id',{method:'POST',body:JSON.stringify(safe),headers:{Prefer:'resolution=ignore-duplicates,return=representation'}});return r.data.length
+ }
+ async listRequests(uid){return(await this.q('requests?order=createdAt.desc'+(uid?'&userId=eq.'+uid:''))).data}
+ async createRequest(r){return(await this.q('requests',{method:'POST',body:JSON.stringify(r)})).data[0]}
+ async updateRequest(id,p){return(await this.q('requests?id=eq.'+id,{method:'PATCH',body:JSON.stringify(p)})).data[0]}
+ async log(action,detail){await this.q('audit_logs',{method:'POST',body:JSON.stringify({action,detail,at:Date.now()})}).catch(()=>{})}
+ async updateCitizen(id,p){return(await this.q('users?id=eq.'+encodeURIComponent(id),{method:'PATCH',body:JSON.stringify(p)})).data[0]}
+ async listLogs(){return(await this.q('audit_logs?order=at.desc&limit=100')).data}
+ async deleteCitizen(id){await this.q('requests?userId=eq.'+encodeURIComponent(id),{method:'DELETE'});await this.q('users?id=eq.'+encodeURIComponent(id),{method:'DELETE'})}
+ async reset(){throw new Error('Адміністративне скидання Supabase вимкнено. Виконайте окрему захищену серверну процедуру після резервного копіювання; клієнтський anon key не повинен мати права очищення таблиць.')}
+ async exportAll(){return{citizens:(await this.q('users?limit=5000')).data,requests:await this.listRequests()}}
+}
+const db=DB_PROVIDER=='supabase'?new SupabasePostgresAdapter():new LocalSeedAdapter();
+
+/* ============ state ============ */
+const S={u:null,tab:'feed',view:'app',am:'in',pin:null,cat:'Усі',sq:'',page:0,q:'',fs:'',atab:'cit',w:null,qt:{},upd:{},notifications:[]};
+const syncRoute=(push=true)=>{
+ const route={tab:S.tab,view:S.view,atab:S.atab};
+ if(push)history.pushState(route,'',location.pathname+location.search+location.hash);
+ else history.replaceState(route,'',location.pathname+location.search+location.hash);
+};
+const navigate=(patch)=>{Object.assign(S,patch);syncRoute(true);render()};
+const A=(a,d)=>db.log(a,{user:S.u?.id,...d});
+const notify=(title,message,userId)=>{const n={id:'n'+Date.now(),title,message,userId,at:Date.now()};S.notifications.unshift(n);S.notifications=S.notifications.slice(0,30);idbSet('db_notifications',S.notifications).catch(()=>st.set('db_notifications',JSON.stringify(S.notifications)));try{const bc=new BroadcastChannel('dovira-events');bc.postMessage(n);bc.close()}catch{};toast(title+': '+message)};
+const FLAGS=[{type:'Іноземний агент',restrict:1},{type:'Під розслідуванням',restrict:0},{type:'Ризик шахрайства',restrict:1},{type:'Під санкціями',restrict:1},{type:'Призупинено',restrict:1}];
+const restricted=u=>(u.flags||[]).some(f=>FLAGS.find(x=>x.type==f.type)?.restrict);
+const banner=u=>(u.flags||[]).length?`<div class="box flag"><b>Акаунт позначено</b>${u.flags.map(f=>`<div style="margin-top:8px"><span class="pill flagged">${esc(f.type)}</span> <small>${esc(f.reason||'Причину не вказано')} · ${new Date(f.at).toLocaleDateString()}</small></div>`).join('')}${restricted(u)?'<p class="mut" style="margin:8px 0">Допомога та бізнес-послуги недоступні, поки діє ця позначка.</p>':''}<button class="btn sm" style="margin-top:10px" data-act="appeal">Оскаржити рішення</button></div>`:'';
+const flagsPanel=u=>`<h2 style="font-size:18px;margin-top:14px">Позначки</h2>${(u.flags||[]).map((f,i)=>`<div class="row box" style="padding:12px 18px;margin-bottom:6px"><span><span class="pill flagged">${esc(f.type)}</span><br><small>${esc(f.reason||'')} · від ${esc(f.by)}</small></span><button class="btn sm ghost" data-act="unflag" data-v="${u.id}" data-i="${i}">Зняти</button></div>`).join('')||'<p class="mut">На цьому акаунті немає позначок.</p>'}<select id="ft">${FLAGS.map(f=>`<option>${f.type}</option>`).join('')}</select><input id="fr" placeholder="Причина (її побачить громадянин)"><div class="tools"><button class="btn sm" data-act="flag" data-v="${u.id}">Позначити</button><button class="btn sm ghost" data-act="setst" data-v="${u.id}" data-d="verified">Верифікувати</button><button class="btn sm ghost" data-act="setst" data-v="${u.id}" data-d="pending">Позначити «очікує»</button></div>`;
+const logV=l=>l.length?`<div class="sc"><table class="tbl"><tr><th>Коли</th><th>Дія</th><th>Деталі</th></tr>${l.slice(0,100).map(x=>`<tr><td>${new Date(x.at).toLocaleString()}</td><td>${esc(x.action)}</td><td>${esc(JSON.stringify(x.detail))}</td></tr>`).join('')}</table></div>`:'<div class="box empty">Поки немає дій. Тут фіксуються дії громадян та адміністраторів.</div>';
+const CARDS={id:'ID-картка',tax:'Картка платника податків',dl:'Посвідчення водія',veh:'Свідоцтво про реєстрацію ТЗ',zp:'Закордонний паспорт',stu:'Студентський квиток',pen:'Пенсійне посвідчення',mil:'Військово-обліковий документ',vpo:'Довідка ВПО',med:'Електронний медичний запис',bc:'Свідоцтво про народження'};
+const UNI=['КНУ ім. Шевченка','НУ «Львівська політехніка»','ОНУ ім. Мечникова','ХНУ ім. Каразіна','КПІ ім. Сікорського'];
+const ageOf=u=>{const d=new Date(u.dob);if(isNaN(d))return 30;const n=new Date();let a=n.getFullYear()-d.getFullYear();if(n<new Date(n.getFullYear(),d.getMonth(),d.getDate()))a--;return a};
+const sexOf=u=>u.sex||(/[ая]$/.test(u.name||'')?'f':'m');
+const RULES={id:{min:14},tax:{min:0},dl:{min:18},veh:{min:18,needs:'dl'},zp:{min:18},stu:{min:14,max:35},pen:{min:60},mil:{min:18,max:60,sex:'m'}};
+const INSTANT=['med','bc'],SVMIN={crim:18,fop:18,tax:16,fines:18,share:18,income:16};
+const eligible=(u,k,have=hasDocs(u))=>{const R=RULES[k]||{},a=ageOf(u);
+ if(R.min&&a<R.min)return{ok:0,why:`Доступно з ${R.min} років`};if(R.max&&a>R.max)return{ok:0,why:`Лише до ${R.max} років`};
+ if(R.sex&&sexOf(u)!=R.sex)return{ok:0,why:'Лише для чоловіків'};if(R.needs&&!have.includes(R.needs))return{ok:0,why:'Потрібне '+CARDS[R.needs].toLowerCase()};return{ok:1}};
+const startDocs=u=>{
+ const age=ageOf(u);
+ // Minors receive only civil/health records appropriate to their age.
+ const candidates=age<18?['bc','med']:['id','tax','med'];
+ return candidates.filter(k=>eligible(u,k,[]).ok);
+};
+const hasDocs=u=>{if(u.docs)return u.docs.filter(k=>eligible(u,k,[]).ok);const r=rng(hash(u.id+'docs')),L=['id','tax','med'];
+ if(ageOf(u)<18)L.push('bc');if(r()<.8)L.push('dl');if(r()<.65)L.push('veh');if(r()<.55)L.push('zp');if(r()<.5)L.push('stu');if(r()<.9)L.push('pen');if(r()<.6)L.push('mil');if(r()<.12)L.push('vpo');
+ return L.filter((k,i,a)=>eligible(u,k,a.slice(0,i)).ok)};
+const curP=()=>(S.pc&&(S.u.children||[]).find(c=>c.id==S.pc))||S.u;
+const saveDocs=async L=>{if(S.pc){const K=S.u.children.map(k=>k.id==S.pc?{...k,docs:L}:k);await db.updateCitizen(S.u.id,{children:K});S.u.children=K}else{await db.updateCitizen(S.u.id,{docs:L});S.u.docs=L}};
+async function docMarket(){const u=curP(),have=hasDocs(u),reqs=await db.listRequests(S.u.id);
+ modal(`<h2>Додати документ</h2><p class="mut">Оформіть документи, яких у вас ще немає${S.pc?' (для: '+esc(u.name)+')':''}.</p>${Object.keys(CARDS).filter(k=>!have.includes(k)).map(k=>{const e=eligible(u,k,have),pe=reqs.some(r=>r.serviceId=='doc:'+k&&r.status=='pending'&&(r.kid||null)==(S.pc||null));
+ return`<div class="box row" style="padding:14px 18px;margin-bottom:8px"><div><b>${CARDS[k]}</b><br><small>${pe?'Заявка на розгляді':e.ok?(INSTANT.includes(k)?'Видається одразу':'Потрібне підтвердження реєстру'):e.why}</small></div>${e.ok&&!pe?`<button class="btn sm" data-act="reqdoc" data-v="${k}">Замовити</button>`:`<span class="pill">${pe?'очікує':'недоступно'}</span>`}</div>`}).join('')||'<p class="empty">Усі доступні документи вже у гаманці.</p>'}<button class="btn ghost" data-act="close">Закрити</button>`)}
+function kidsV(){if(!S.u||S.u.role!=='citizen'||ageOf(S.u)<18){toast('Функція «Діти та родина» доступна лише повнолітнім громадянам.');return}const K=S.u.children||[];modal(`<h2>Діти та родина</h2><p class="mut">Додайте дитину, щоб керувати її документами у вкладці «Документи».</p>${K.map(k=>`<div class="box row" style="padding:12px 18px;margin-bottom:8px"><span><b>${esc(k.name)} ${esc(k.surname)}</b><br><small>${k.dob} · ${ageOf(k)} р.</small></span><button class="btn sm ghost" data-act="rmkid" data-v="${k.id}">Видалити</button></div>`).join('')}<input id="kn" placeholder="Ім’я дитини"><input id="kb" type="date"><select id="ks"><option value="m">Хлопчик</option><option value="f">Дівчинка</option></select><button class="btn" data-act="addkid">Додати</button><button class="btn ghost" data-act="close">Закрити</button>`)}
+const bar=(l,n,t)=>`<div class="row" style="margin:6px 0"><small style="width:150px">${l}</small><div style="flex:1;background:var(--ln);border-radius:9px;height:12px"><div style="width:${t?Math.round(n/t*100):0}%;height:100%;border-radius:9px;background:var(--blue)"></div></div><b style="width:44px;text-align:right">${n}</b></div>`;
+const anaV=c=>{const t=c.length;return`<div class="box"><b>Вікові групи</b>${[['0–13',0,13],['14–17',14,17],['18–34',18,34],['35–59',35,59],['60+',60,200]].map(([l,a,b])=>bar(l,c.filter(u=>ageOf(u)>=a&&ageOf(u)<=b).length,t)).join('')}</div><div class="box"><b>Статуси</b>${['verified','pending','flagged'].map(x=>bar(ST[x],c.filter(u=>u.status==x).length,t)).join('')}</div><div class="box"><b>Документи у громадян</b>${Object.keys(CARDS).map(k=>bar(CARDS[k],c.filter(u=>hasDocs(u).includes(k)).length,t)).join('')}</div>`};
+const ageHint=()=>{const h=$('#ageh'),d=$('#bd')?.value;if(!h)return;if(!d){h.textContent='';return}const u={dob:d,sex:$('#sx').value,id:'x'};h.textContent=`Вік: ${ageOf(u)}. Початкові документи: ${startDocs(u).map(k=>CARDS[k]).join(', ')}. Решту можна замовити пізніше.`};
+document.addEventListener('input',e=>{if(e.target.id=='bd')ageHint()});document.addEventListener('change',e=>{if(e.target.id=='bd'||e.target.id=='sx')ageHint()});
+const docsOf=u=>hasDocs(u).map(k=>{const r=rng(hash(u.id+k)),p=a=>a[Math.floor(r()*a.length)],n=(m,d)=>String(hash(u.id+k)%m).padStart(d,'0'),dt=y=>`${String(1+Math.floor(r()*28)).padStart(2,'0')}.${String(1+Math.floor(r()*12)).padStart(2,'0')}.${2027+Math.floor(r()*y)}`,fio=[['Прізвище',u.surname],['Ім’я',u.name]],v=u.vehicle||{plate:'—',model:'—'};
+ const D={id:{no:u.passport,c:'#dbe8f8',rows:[...fio,['Дата народж.',u.dob],['Реєстрація',u.city]]},
+ tax:{no:u.taxId,c:'#e4f0e6',rows:[...fio,['Дата народж.',u.dob],['Статус','Зареєстровано']]},
+ dl:{no:u.license,c:'#f5ecd9',rows:[...fio,['Категорії',p(['B','B, C','A, B','B, C, D'])],['Діє до',dt(8)]]},
+ veh:{no:v.plate,c:'#eadff2',rows:[['Власник',u.surname+' '+u.name],['Авто',v.model],['Рік випуску',2008+Math.floor(r()*17)],['Колір',p(['білий','чорний','сірий','синій','червоний'])]]},
+ zp:{no:'FK'+n(1e6,6),c:'#d8ecf3',rows:[...fio,['Громадянство','Україна'],['Діє до',dt(9)]]},
+ stu:{no:'КВ-'+n(1e7,7),c:'#fde2e4',rows:[...fio,['Заклад',p(UNI)],['Форма',p(['денна','заочна'])]]},
+ pen:{no:'ПН-'+n(1e8,8),c:'#f1e4d3',rows:[...fio,['Вид пенсії','за віком'],['Виплата',p([3500,4200,5100,6800])+' ₴']]},
+ mil:{no:'ВО-'+n(1e7,7),c:'#e0e6d4',rows:[...fio,['Статус','військовозобов’язаний'],['ТЦК',u.city]]},
+ vpo:{no:'5'+n(1e9,9),c:'#fff0c2',rows:[...fio,['Проживання',u.city],['Видано',p(['14.03.2022','02.06.2022','19.11.2023'])]]},
+ bc:{no:'І-'+n(1e6,6),c:'#fbe9d7',rows:[...fio,['Дата народж.',u.dob],['Місце народж.',u.city]]},
+ med:{no:'МЗ-'+n(1e8,8),c:'#dff3ec',rows:[...fio,['Група крові',p(['I+','II+','III+','IV+','II−'])],['Декларація',p(['є','є','немає'])]]}}[k];
+ return{k,t:CARDS[k],h:u.name+' '+(u.surname||'?')[0]+'.',...D}});
+
+/* ============ QR + barcode (deterministic, decorative) ============ */
+const b64=o=>btoa(unescape(encodeURIComponent(JSON.stringify(o))));
+const sig=o=>hash(o.k+o.n+o.t+'dovira-demo').toString(36);
+const tok=o=>b64({...o,s:sig(o)});
+const qrSvg=text=>{
+ try{
+  if(typeof window.qrcode!=='function')throw new Error('QR library unavailable');
+  const q=window.qrcode(0,'L');q.addData(String(text));q.make();
+  const n=q.getModuleCount();let d='';
+  for(let y=0;y<n;y++)for(let x=0;x<n;x++)if(q.isDark(y,x))d+=`M${x+2} ${y+2}h1v1h-1z`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${n+8} ${n+8}" role="img" aria-label="QR-код" shape-rendering="crispEdges"><rect x="0" y="0" width="${n+8}" height="${n+8}" fill="#fff"/><path d="${d.replaceAll(/([0-9]+) ([0-9]+)/g,(_,x,y)=>`${+x+2} ${+y+2}`)}" fill="#111"/></svg>`;
+ }catch(err){
+  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 140" role="img" aria-label="QR-код недоступний"><rect width="140" height="140" rx="8" fill="#fff"/><rect x="8" y="8" width="124" height="124" rx="5" fill="none" stroke="#b8c0c8" stroke-dasharray="4 4"/><text x="70" y="64" text-anchor="middle" font-size="11" fill="#6b7480">QR</text><text x="70" y="80" text-anchor="middle" font-size="9" fill="#6b7480">недоступний</text></svg>';
+ }
+};
+const base=()=>location.href.split('#')[0]+'#v=';
+const qrPayload=(d,t)=>base()+tok({k:d.k,n:d.no,h:d.h,t});
+const certPayload=r=>base()+tok({k:'c',n:r.serial,h:r.userName,d:r.title,t:r.createdAt});
+const qr=(d,t)=>qrSvg(qrPayload(d,t));
+const qrC=r=>qrSvg(certPayload(r));
+const decodeVerification=input=>{try{let raw=String(input||'').trim();if(!raw)return null;if(raw.includes('#v='))raw=raw.slice(raw.indexOf('#v=')+3);else if(raw.startsWith('#v='))raw=raw.slice(3);const o=JSON.parse(decodeURIComponent(escape(atob(raw))));const ok=!!o&&o.s===sig(o),cert=ok&&o.k==='c',fresh=ok&&(cert||Date.now()-Number(o.t)<18e4);return{ok,fresh,cert,data:o}}catch{return{ok:false,fresh:false,cert:false,data:null}}};
+const qrOf=k=>qr(docsOf(curP()).find(d=>d.k==k),S.qt[k]);
+const ST={pending:'очікує',issued:'видано',approved:'схвалено',rejected:'відхилено',verified:'верифіковано',flagged:'позначено'};
+const pinOf=()=>S.u&&st.get('pin_'+S.u.id);
+function verV(){let o;try{o=JSON.parse(decodeURIComponent(escape(atob(location.hash.slice(3)))))}catch(e){}
+ const ok=o&&o.s===sig(o),cert=ok&&o.k=='c',fresh=ok&&(cert||Date.now()-o.t<18e4),T=ok?(cert?o.d:CARDS[o.k]||o.k):'',
+ c=!ok?['✕','Недійсний код','Цей QR-код не розпізнано або його змінено.']:!fresh?['!','Термін дії коду минув','Попросіть власника показати свіжий QR-код.']:['✓',cert?'Довідка дійсна':'Документ дійсний','Підтверджено системою Довіра.'];
+ return`<div class="pin"><div class="logo">Довіра</div><div class="box" style="margin-top:30px"><div class="vi ${fresh?'ok':''}">${c[0]}</div><h2>${c[1]}</h2><p class="mut">${c[2]}</p>${ok?`<div class="row" style="margin-top:14px"><small>Тип</small><b>${esc(T)}</b></div><div class="row"><small>Власник</small><b>${esc(o.h)}</b></div><div class="row"><small>Номер</small><b>${esc(cert?o.n:'•••• '+String(o.n).slice(-4))}</b></div><div class="row"><small>Створено</small><b>${new Date(o.t).toLocaleString('uk-UA')}</b></div>`:''}</div><button class="btn ghost" data-act="closev">Відкрити застосунок</button><p class="hint">Демо-перевірка: підпис не є криптографічним.</p></div>`}
+const bars=seed=>{const r=rng(hash(seed)+1);let s='';for(let i=0,x=0;x<120;i++){const w=1+Math.floor(r()*3);if(i%2==0)s+=`<rect x="${x}" width="${w}" height="30"/>`;x+=w}return`<svg viewBox="0 0 120 30" width="100%" height="100%" preserveAspectRatio="none">${s}</svg>`};
+
+/* ============ views ============ */
+const ICON={feed:'<path d="M4 4h16v16H4zM8 9h8M8 13h5"/>',docs:'<rect x="3" y="6" width="18" height="12" rx="3"/><path d="M7 11h4"/>',svc:'<path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/>',menu:'<circle cx="12" cy="8" r="4"/><path d="M4 21c1-5 15-5 16 0"/>'};
+const authV=()=>`<div class="top"><div class="logo">Довіра</div><button class="btn sm ghost" data-act="lang">EN / УКР</button><button class="btn sm ghost" data-act="scanner">⌕ Перевірити</button><button class="btn sm ghost" data-act="theme" data-v="toggle" aria-label="Змінити тему">◐ Тема</button></div><h1>Держава<br>у твоєму телефоні.</h1><p class="mut">Документи та публічні послуги — завжди з тобою.</p>
+${st.get('quick')&&st.get('pin_'+st.get('quick'))?`<button class="btn" data-act="quick">Швидкий вхід за PIN-кодом: ${esc(st.get('quickname')||'')}</button>`:''}
+ ${st.get('quick')&&st.get('passkey_'+st.get('quick'))?`<button class="btn ghost" data-act="passkeylogin">Увійти за Passkey / біометрією</button>`:''}<div class="seg"><button data-act="amode" data-v="in" class="${S.am=='in'?'on':''}">Вхід</button><button data-act="amode" data-v="up" class="${S.am=='up'?'on':''}">Реєстрація</button></div>
+<div id="af">${S.am=='up'?'<input id="fn" placeholder="Ім’я" autocomplete="given-name"><input id="ln" placeholder="Прізвище" autocomplete="family-name"><small>Дата народження</small><input id="bd" type="date" max="'+new Date().toISOString().slice(0,10)+'"><select id="sx"><option value="m">Чоловік / хлопчик</option><option value="f">Жінка / дівчинка</option></select><input id="ct" placeholder="Місто проживання"><p class="hint" id="ageh" style="margin:0 0 10px;text-align:left"></p>':''}<input id="em" type="email" placeholder="Електронна пошта" autocomplete="email"><input id="pw" type="password" placeholder="Пароль (від 6 символів)"><button class="btn" data-act="auth">${S.am=='up'?'Створити акаунт':'Увійти'}</button></div>
+<div class="or">або</div><button class="btn ghost" data-act="demo" data-v="c">Продовжити з Dovira.Sign (демо)</button><button class="btn ghost" data-act="demo" data-v="a">Відкрити Реєстр як адміністратор (демо)</button>
+<p class="hint">Демо-акаунти: olena@demo.ua / demo1234, admin@demo.ua / admin1234</p>`;
+const pinV=()=>{const p=S.pin,t={set:'Придумайте PIN-код',unlock:'Введіть PIN-код',quick:'Введіть PIN-код'}[p.mode],b={set:['pcancel','Скасувати'],unlock:['plogout','Вийти'],quick:['qback','Назад']}[p.mode];return`<div class="pin"><div class="logo">Довіра</div><h2 style="margin-top:20px">${t}</h2><div class="pd">${[0,1,2,3].map(i=>`<i class="${i<p.buf.length?'on':''}"></i>`).join('')}</div>
+<div class="kp">${[1,2,3,4,5,6,7,8,9].map(n=>`<button data-act="key" data-v="${n}">${n}</button>`).join('')}<button data-act="${b[0]}" style="font-size:13px">${b[1]}</button><button data-act="key" data-v="0">0</button><button data-act="key" data-v="del">⌫</button></div></div>`};
+const shell=()=>`<header class="top"><div class="logo sm">Довіра</div><button class="btn sm ghost" data-act="lang">EN / УКР</button><button class="btn sm ghost" data-act="scanner">⌕ Перевірити</button><button class="btn sm ghost" data-act="notifications" aria-label="Сповіщення" aria-expanded="false">♧ <span id="ncount">${S.notifications.length||0}</span></button>${S.u.role=='admin'?`<div class="seg sm"><button data-act="view" data-v="app" class="${S.view=='app'?'on':''}">Застосунок</button><button data-act="view" data-v="admin" class="${S.view=='admin'?'on':''}">Реєстр</button></div>`:`<span class="pill verified">✓ Верифіковано</span>`}</header><main id="main"></main>
+${S.view=='app'?`<nav class="nav">${[['feed','Стрічка'],['docs','Документи'],['svc','Послуги'],['menu','Меню']].map(([k,l])=>`<button data-act="nav" data-v="${k}" class="${S.tab==k?'on':''}"><svg viewBox="0 0 24 24">${ICON[k]}</svg>${l}</button>`).join('')}</nav>`:''}`;
+const cardV=(d,u)=>{const t=S.upd[d.k]??=Date.now();S.qt[d.k]??=Date.now();return`<div class="slot" data-k="${d.k}" data-no="${esc(d.no)}">
+<button class="dots" data-act="menu" aria-label="Дії з документом" aria-expanded="false">•••</button>
+<div class="menu"><button data-act="copy" data-no="${esc(d.no)}">Копіювати номер документа</button><button data-act="pdf" data-k="${d.k}">Завантажити витяг (PDF)</button><button data-act="refresh" data-k="${d.k}">Оновити дані</button></div>
+<div class="card" data-act="flip" tabindex="0" role="button" aria-label="${d.t}, press to flip"><div class="face" style="--c:${d.c}"><div class="shim"></div>${d.k=='id'||d.k=='dl'?`<div class="ph">${av(u)}</div>`:''}<div class="row" style="justify-content:flex-start"><b>${d.t}</b></div><small>Цифровий документ</small>
+<div class="num">${esc(d.no)}</div><div class="kv">${d.rows.map(([a,b])=>`<div><small>${a}</small>${esc(b)}</div>`).join('')}</div>
+<div class="row" style="margin-top:10px"><span class="pill verified">✓ Верифіковано</span><small class="upd">Оновлено ${ago(t)}</small></div></div>
+<div class="face back"><div class="qr">${qr(d,S.qt[d.k])}</div><button class="btn sm ghost" data-act="copylink" data-link="${esc(qrPayload(d,S.qt[d.k]))}" style="margin:2px 0 6px">Копіювати посилання перевірки</button><div class="bar">${bars(d.no)}</div><small>Діє <span class="tm">3:00</span> · торкніться, щоб повернути</small></div></div></div>`};
+const SV=[
+ {id:'esupport',cat:'Допомога та статуси',t:'єПідтримка',ua:'Грошова допомога',c:'#FFE9A8',auto:0,opts:['Допомога сім’ї','Освіта','Лікування']},
+ {id:'idp',cat:'Допомога та статуси',t:'Довідка ВПО',ua:'Облік переселенців',c:'#FFE9A8',auto:0,opts:['Реєстрація','Поновлення']},
+ {id:'crim',cat:'Довідки та витяги',t:'Витяг про судимість',ua:'Для роботи чи візи',c:'#CFE1FF',auto:1,opts:['Працевлаштування','Віза','Інше']},
+ {id:'income',cat:'Довідки та витяги',t:'Довідка про доходи',ua:'З податкової',c:'#CFE1FF',auto:1,opts:['Банк','Віза','Інше']},
+ {id:'resid',cat:'Довідки та витяги',t:'Реєстрація місця проживання',ua:'Зміна адреси',c:'#CFE1FF',auto:0,opts:['Нова адреса','Зняття з реєстрації']},
+ {id:'dup',cat:'Довідки та витяги',t:'Дублікат документа',ua:'Втрата чи пошкодження',c:'#CFE1FF',auto:0,opts:['ID-картка','Посвідчення водія','Свідоцтво ТЗ']},
+ {id:'fop',cat:'Бізнес і податки',t:'Реєстрація ФОП',ua:'Відкрити бізнес',c:'#D5F0DA',auto:0,opts:['2 група','3 група']},
+ {id:'tax',cat:'Бізнес і податки',t:'Сплата податків',ua:'Єдиний податок, ПДФО',c:'#D5F0DA',auto:1,opts:['Єдиний податок','ПДФО']},
+ {id:'fines',cat:'Транспорт і штрафи',t:'Сплата штрафів',ua:'Штрафи за порушення ПДР',c:'#E7D9F5',auto:1,opts:['Усі незакриті штрафи']},
+ {id:'share',cat:'Транспорт і штрафи',t:'Передати авто',ua:'Тимчасове користування',c:'#E7D9F5',auto:1,opts:['На один день','На тиждень']}];
+const CATS=[...new Set(SV.map(s=>s.cat))];
+const sgrid=()=>{const q=S.sq.toLowerCase(),l=SV.filter(s=>(S.cat=='Усі'||s.cat==S.cat)&&(s.t+s.ua).toLowerCase().includes(q));
+ return l.map(s=>`<button class="sv" data-act="svc" data-v="${s.id}" style="${ageOf(S.u)<(SVMIN[s.id]||0)?'opacity:.45':''}"><i style="background:${s.c}">${s.t[0]}</i><b>${s.t}</b><small>${s.ua}</small></button>`).join('')||`<p class="empty">Нічого не знайдено за запитом «${esc(S.sq)}». Спробуйте інше слово чи категорію.</p>`};
+
+/* ============ screens ============ */
+async function render(){const app=$('#app');app.className=S.u&&S.view=='admin'&&!S.pin?'wide':'';
+ if(location.hash.startsWith('#v='))return app.innerHTML=verV();if(S.pin)return app.innerHTML=pinV();if(!S.u)return app.innerHTML=authV();app.innerHTML=shell();
+ S.view=='admin'?admin():({feed,docs,svc,menu})[S.tab]();requestAnimationFrame(()=>translateUI())}
+function docs(){const P=curP(),L=docsOf(P),K=S.u.children||[];$('#main').innerHTML=`<h2>Документи</h2>${K.length?`<div class="pills"><button data-act="prof" data-v="" class="${S.pc?'':'on'}">Мої</button>${K.map(k=>`<button data-act="prof" data-v="${k.id}" class="${S.pc==k.id?'on':''}">${esc(k.name)}</button>`).join('')}</div>`:''}<div class="dw"><button class="arr l" data-act="deck" data-v="-1" aria-label="Попередній">‹</button><div class="deck" id="deck">${L.map(d=>cardV(d,P)).join('')}</div><button class="arr r" data-act="deck" data-v="1" aria-label="Наступний">›</button></div><div class="dn" id="dn">${L.map((_,i)=>`<button data-act="deckto" data-v="${i}" class="${i?'':'on'}" aria-label="Документ ${i+1}"></button>`).join('')}</div><button class="btn ghost" data-act="adddoc">+ Додати документ</button><p class="mut" style="text-align:center;font-size:13px;margin-top:12px">Гортайте, перетягуйте мишею або користуйтеся клавішами ← →. Торкніться картки, щоб перевернути.</p>`}
+function svc(){$('#main').innerHTML=`<h2>Послуги</h2><input id="sq" placeholder="Пошук послуг" value="${esc(S.sq)}"><div class="pills">${['Усі',...CATS].map(c=>`<button data-act="cat" data-v="${c}" class="${S.cat==c?'on':''}">${c}</button>`).join('')}</div><div class="grid" id="sg">${sgrid()}</div>`}
+async function feed(){const m=$('#main');m.innerHTML=`<h2>Вітаємо, ${esc(S.u.name)}</h2>${skel(3)}`;const rs=await db.listRequests(S.u.id);S.u=await db.getCitizen(S.u.id)||S.u;
+ m.innerHTML=`<h2>Вітаємо, ${esc(S.u.name)}</h2>${banner(S.u)}<div class="box"><small>Вхідні</small><div style="font-size:18px;font-weight:700">${rs.filter(r=>r.status=='pending').length} у роботі, ${rs.filter(r=>r.status!='pending').length} готово</div></div>`+
+ (rs.length?rs.map(r=>`<div class="box"><div class="row"><b>${esc(r.title)}</b><span class="pill ${r.status}">${ST[r.status]}</span></div><small>${new Date(r.createdAt).toLocaleString()}${r.note?' · '+esc(r.note):''}</small>
+ ${r.timeline?.length?`<div class="steps" aria-label="Історія заявки">${r.timeline.map((x,i)=>`<b class="on" title="${esc(x.label)}"></b>`).join('')}</div><small>${r.timeline.map(x=>esc(x.label)+' · '+new Date(x.at).toLocaleString('uk-UA')).join('<br>')}</small>`:''}${(r.status=='issued'||r.status=='approved')&&r.serviceId!='appeal'&&!r.serviceId.startsWith('doc:')?`<div style="margin-top:10px"><button class="btn sm" data-act="cert" data-v="${r.id}">Переглянути довідку</button></div>`:''}</div>`).join(''):`<div class="box empty">Тут поки порожньо. Ваші заявки та їх результати з’являться тут.<div style="margin-top:12px"><button class="btn sm" data-act="nav" data-v="svc">До послуг</button></div></div>`)}
+function menu(){const u=S.u;$('#main').innerHTML=`<h2>Меню</h2><div class="box row" style="justify-content:flex-start;gap:14px"><span class="avs lg">${av(u)}</span><div><b>${esc(u.name)} ${esc(u.surname)}</b><br><small>${esc(u.email)} · ${u.role=='admin'?'адміністратор':'громадянин'}</small><br><small>${hasDocs(u).includes('tax')?'РНОКПП '+u.taxId+' · ':''}${esc(u.city)}</small></div></div>
+<div class="box"><small>Вигляд</small><div class="seg sm" style="margin-top:8px">${['light','dark','system'].map(t=>`<button data-act="theme" data-v="${t}" class="${(st.get('theme')||'system')==t?'on':''}">${{light:'Світла',dark:'Темна',system:'Системна'}[t]}</button>`).join('')}</div></div>
+${u.role=='citizen'&&ageOf(u)>=18?`<button class="btn ghost" data-act="kids">Діти та родина (${(u.children||[]).length})</button>`:''}<button class="btn ghost" data-act="mph">Змінити фото профілю</button><input type="file" id="mphf" accept="image/*" hidden><button class="btn ghost" data-act="chpw">Змінити пароль</button>${u.role=='admin'?'<button class="btn ghost" data-act="reset">Скинути демо-дані</button>':''}
+<button class="btn ghost" data-act="passkey">Налаштувати вхід за біометрією / Passkey</button><p class="hint">Демо WebAuthn: підпис автентифікатора не перевіряється сервером. Не використовуйте для production-автентифікації.</p><button class="btn ghost" data-act="setpin">${pinOf()?'Змінити PIN-код':'Встановити PIN-код'}</button>${pinOf()?'<button class="btn ghost" data-act="rmpin">Видалити PIN-код</button><button class="btn ghost" data-act="lock">Заблокувати зараз</button>':''}
+<button class="btn ghost" data-act="mydata">Завантажити мої дані (JSON)</button><button class="btn" style="margin-top:10px" data-act="logout">Вийти</button>`}
+async function admin(){const m=$('#main');m.innerHTML=`<h2>Реєстр</h2>${skel(4)}`;
+ const [cr,rs,logs]=await Promise.all([db.listCitizens({q:S.q,status:S.fs,page:S.page}),db.listRequests(null),db.listLogs()]);const pend=rs.filter(r=>r.status=='pending');
+ m.innerHTML=`<div class="row"><h2>Реєстр</h2><div class="seg sm"><button data-act="atab" data-v="cit" class="${S.atab=='cit'?'on':''}">Громадяни</button><button data-act="atab" data-v="req" class="${S.atab=='req'?'on':''}">Заявки (${pend.length})</button><button data-act="atab" data-v="log" class="${S.atab=='log'?'on':''}">Журнал дій</button><button data-act="atab" data-v="ana" class="${S.atab=='ana'?'on':''}">Аналітика</button></div></div>
+ <div class="stats"><div class="box"><small>Знайдено громадян</small><b>${cr.total}</b></div><div class="box"><small>Заявок у черзі</small><b>${pend.length}</b></div></div>`+
+ (S.atab=='cit'?`<div class="tools"><input id="aq" placeholder="Пошук: ім’я, РНОКПП, номер документа" value="${esc(S.q)}"><select id="af2"><option value="">Усі статуси</option>${['verified','pending','flagged'].map(s=>`<option value="${s}" ${S.fs==s?'selected':''}>${ST[s]}</option>`).join('')}</select>
+ <button class="btn sm" data-act="add">+ Додати громадянина</button><button class="btn sm" data-act="exj">Експорт JSON</button><button class="btn sm" data-act="exc">Експорт CSV</button><button class="btn sm" data-act="imp">Імпорт JSON</button><input type="file" id="imf" accept=".json" hidden></div>
+ <div class="sc"><table class="tbl"><tr><th>Ім’я</th><th>РНОКПП</th><th>Паспорт</th><th>Місто</th><th>Статус</th><th></th></tr>${cr.rows.map(u=>`<tr><td><span class="avs">${av(u)}</span>${esc(u.surname)} ${esc(u.name)}</td><td>${u.taxId}</td><td>${u.passport}</td><td>${esc(u.city)}</td><td><span class="pill ${u.status}">${u.flags?.[0]?esc(u.flags[0].type)+(u.flags.length>1?' +'+(u.flags.length-1):''):ST[u.status]}</span></td><td><button class="btn sm" data-act="inspect" data-v="${u.id}">Деталі</button></td></tr>`).join('')||'<tr><td colspan="6" style="text-align:center;color:#6b7480;padding:30px">За цими фільтрами нікого не знайдено.</td></tr>'}</table></div>
+ <div class="row" style="margin-top:12px"><small>${cr.total?S.page*15+1:0}–${Math.min(cr.total,S.page*15+15)} з ${cr.total}</small><span><button class="btn sm ghost" data-act="pg" data-v="-1" ${S.page?'':'disabled'}>Назад</button> <button class="btn sm" data-act="pg" data-v="1" ${(S.page+1)*15<cr.total?'':'disabled'}>Далі</button></span></div>`
+ :S.atab=='ana'?anaV((await db.exportAll()).citizens):S.atab=='log'?logV(logs):(pend.length?pend.map(r=>`<div class="box"><div class="row"><div><b>${esc(r.title)}</b><br><small>${esc(r.userName)} · ${new Date(r.createdAt).toLocaleString()}</small>${r.note?`<br><small>${esc(r.note)}</small>`:''}</div><span><button class="btn sm" data-act="dec" data-v="${r.id}" data-d="approved">Схвалити</button> <button class="btn sm ghost" data-act="dec" data-v="${r.id}" data-d="rejected">Відхилити</button></span></div></div>`).join(''):'<div class="box empty">Немає заявок у черзі. Нові заявки громадян з’являться тут.</div>'))}
+
+async function makePDF(title,subtitle,rows,filename){
+ const safeRows=rows.map(([k,v])=>[String(k),String(v??'—')]);
+ try{
+  if(window.pdfMake?.createPdf){
+   const body=[['Поле','Значення'],...safeRows];
+   const def={pageSize:'A4',pageMargins:[42,58,42,48],watermark:{text:'ДЕМО',color:'#d9e2ef',opacity:.22,bold:true,fontSize:76,angle:315},
+    content:[{text:'ДОВІРА',style:'brand'},{canvas:[{type:'line',x1:0,y1:5,x2:510,y2:5,lineWidth:1,lineColor:'#1e5391'}],margin:[0,8,0,18]},
+     {text:title,style:'title'},{text:subtitle,style:'sub',margin:[0,0,0,18]},
+     {table:{headerRows:1,widths:['34%','66%'],body},layout:'lightHorizontalLines'},
+     {text:'Демо-витяг. Не є офіційним державним документом.',style:'warning',margin:[0,28,0,8]},
+     {text:'Сформовано: '+new Date().toLocaleString('uk-UA'),style:'footer'}],
+    styles:{brand:{fontSize:22,bold:true,color:'#1e5391',characterSpacing:1},title:{fontSize:17,bold:true,color:'#19232e'},sub:{fontSize:10,color:'#647080'},warning:{fontSize:9,color:'#a34b28',italics:true},footer:{fontSize:8,color:'#8993a0'}},defaultStyle:{font:'Roboto',fontSize:10,color:'#202832'}};
+   window.pdfMake.createPdf(def).download(filename);
+   toast('PDF підготовлено.');return true;
+  }
+  if(window.jspdf?.jsPDF){
+   const {jsPDF}=window.jspdf,doc=new jsPDF({unit:'mm',format:'a4'});doc.setFontSize(18);doc.text('DOVIRA — DEMO',20,24);doc.setFontSize(14);doc.text(String(title),20,42);doc.setFontSize(10);doc.text(String(subtitle),20,50);
+   let y=64;for(const [k,v] of safeRows){const lines=doc.splitTextToSize(k+': '+v,170);if(y+lines.length*6>275){doc.addPage();y=20}doc.text(lines,20,y);y+=lines.length*6+2}
+   doc.setTextColor(160,70,40);doc.text('DEMO — not an official government document',20,285);doc.save(filename);toast('PDF підготовлено.');return true;
+  }
+  throw new Error('PDF libraries unavailable');
+ }catch(err){
+  const escHtml=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const html='<!doctype html><html lang="uk"><meta charset="utf-8"><title>'+escHtml(title)+'</title><style>body{font:16px/1.5 Arial,sans-serif;max-width:800px;margin:48px auto;padding:0 24px;color:#202832}h1{color:#1e5391}table{width:100%;border-collapse:collapse;margin:24px 0}td{padding:10px;border-bottom:1px solid #ddd}td:first-child{font-weight:bold;width:34%}.water{border:2px solid #b55;padding:12px;color:#a34b28;font-weight:bold;text-align:center}</style><h1>ДОВІРА</h1><h2>'+escHtml(title)+'</h2><p>'+escHtml(subtitle)+'</p><table>'+safeRows.map(([k,v])=>'<tr><td>'+escHtml(k)+'</td><td>'+escHtml(v)+'</td></tr>').join('')+'</table><p class="water">ДЕМО — НЕ Є ОФІЦІЙНИМ ДЕРЖАВНИМ ДОКУМЕНТОМ</p><small>Сформовано '+escHtml(new Date().toLocaleString('uk-UA'))+'</small></html>';
+  try{const blob=new Blob([html],{type:'text/html;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename.replace(/\.pdf$/i,'.html');document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);toast('PDF-бібліотеки недоступні. Завантажено HTML-версію витягу.');return false}
+  catch(fallbackError){modal('<h2>Попередній перегляд витягу</h2><div class="box"><b>'+escHtml(title)+'</b><p>'+escHtml(subtitle)+'</p>'+safeRows.map(([k,v])=>'<p><b>'+escHtml(k)+':</b> '+escHtml(v)+'</p>').join('')+'<p class="field-error">ДЕМО — не офіційний документ.</p></div><button class="btn" data-act="close">Закрити</button>');toast('Не вдалося завантажити файл. Відкрито попередній перегляд.');return false}
+ }
+}
+
+function scannerV(){modal(`<h2>Симулятор перевірки</h2><p class="mut">Вставте повне посилання з QR-коду або токен після <code>#v=</code>. Можна також обчислити SHA-256 хеш завантаженого файлу.</p><textarea id="scaninput" placeholder="Вставте посилання або токен перевірки"></textarea><button class="btn" data-act="scanverify">Перевірити QR / токен</button><div id="scanresult" aria-live="polite"></div><div class="box" style="margin-top:12px"><b>Перевірити файл за SHA-256</b><input id="scanfile" type="file"><p class="mut" id="filehash">Хеш буде обчислено локально у браузері. Сам по собі хеш не підтверджує справжність без довіреного еталона.</p></div><button class="btn ghost" data-act="close">Закрити</button>`)}
+async function verifyScan(){const r=decodeVerification($('#scaninput')?.value),out=$('#scanresult');if(!out)return;if(!r?.ok){out.innerHTML='<p class="field-error">Код не розпізнано або контрольна сума не збігається.</p>';return}if(!r.fresh){out.innerHTML='<p class="field-error">Термін дії коду минув.</p>';return}const o=r.data;out.innerHTML=`<div class="box"><span class="pill verified">✓ Демо-код коректний</span><p><b>${esc(r.cert?o.d:(CARDS[o.k]||o.k))}</b></p><p>Власник: ${esc(o.h)}</p><p>Номер: ${esc(o.n)}</p><small>Увага: це локальна демонстраційна перевірка, не державний реєстр і не криптографічний підпис.</small></div>`}
+/* ============ wizard + modals ============ */
+let modalReturnFocus=null;
+const modal=h=>{
+ const root=$('#modal');
+ if(h){
+  if(!root.innerHTML)modalReturnFocus=document.activeElement;
+  root.innerHTML=`<div class="mo" data-act="close"><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="modal-title" tabindex="-1">${h.replace('<h2>','<h2 id="modal-title">')}</div></div>`;
+  requestAnimationFrame(()=>{const d=root.querySelector('.sheet');(d.querySelector('input,button,select,textarea,[tabindex="0"]')||d).focus()});
+ }else{root.innerHTML='';if(modalReturnFocus?.isConnected)modalReturnFocus.focus();modalReturnFocus=null}
+};
+function wizard(){const w=S.w,s=SV.find(x=>x.id==w.id),u=S.u;
+ const body=w.step==1?`<p class="mut">Дані підтягнуто з вашого профілю.</p>${[['ПІБ',u.surname+' '+u.name],['РНОКПП',u.taxId],['Паспорт',u.passport],['Місто',u.city]].map(([a,b])=>`<div class="row box" style="padding:12px 18px;margin-bottom:6px"><small>${a}</small><b>${esc(b)}</b></div>`).join('')}`
+ :w.step==2?`<select id="wp">${s.opts.map(o=>`<option ${w.purpose==o?'selected':''}>${o}</option>`).join('')}</select><textarea id="wn" placeholder="Додайте примітку (необов’язково)">${esc(w.note||'')}</textarea><label><input type="checkbox" id="wc" ${w.ok?'checked':''}>Підтверджую, що мої дані правильні</label>`
+ :`<div class="box"><small>Послуга</small><br><b>${s.t}</b><br><br><small>Мета</small><br>${esc(w.purpose)}<br><br><small>Для</small><br>${esc(u.name+' '+u.surname)}, РНОКПП ${u.taxId}</div><p class="mut">${s.auto?'Цю послугу видають миттєво.':'Заявку розгляне працівник реєстру.'}</p>`;
+ modal(`<h2>${s.t}</h2><div class="steps">${[1,2,3].map(i=>`<b class="${i<=w.step?'on':''}"></b>`).join('')}</div>${body}<button class="btn" data-act="${w.step<3?'wnext':'wsub'}">${w.step<3?'Далі':'Надіслати заявку'}</button>${w.step>1?'<button class="btn ghost" data-act="wback">Назад</button>':''}`)}
+function certV(r){modal(`<h2>${esc(r.title)}</h2><div class="box" style="text-align:center"><div class="qr" style="margin:0 auto 10px">${qrC(r)}</div><button class="btn sm ghost" data-act="copylink" data-link="${esc(certPayload(r))}">Копіювати посилання перевірки</button><b>${r.serial}</b><p class="mut" style="margin-top:8px">Видано на ім’я ${esc(r.userName)}, ${new Date(r.createdAt).toLocaleDateString()}. ${r.note?'Примітка: '+esc(r.note):''}</p><span class="pill verified">✓ Підтверджено Довірою</span></div><button class="btn ghost" data-act="pcert" data-v="${r.id}">Друк / PDF</button><button class="btn" style="margin-top:10px" data-act="close">Готово</button>`)}
+async function inspect(id){const u=await db.getCitizen(id),rs=await db.listRequests(id);
+ modal(`<div class="row" style="justify-content:flex-start;gap:14px"><span class="avs lg">${av(u)}</span><div><h2 style="margin:0">${esc(u.surname)} ${esc(u.name)}</h2><span class="pill ${u.status}">${ST[u.status]}</span></div></div><div class="tools" style="margin-top:12px"><button class="btn sm" data-act="edit" data-v="${u.id}">Редагувати</button><button class="btn sm ghost" data-act="del" data-v="${u.id}">Видалити</button></div><p class="mut" style="margin:8px 0">${esc(u.email)} · ${esc(u.city)} · н. ${u.dob}</p>${flagsPanel(u)}${docsOf(u).map(d=>`<div class="box row" style="padding:12px 18px;margin-bottom:6px"><span>${d.t}</span><b>${esc(d.no)}</b></div>`).join('')}<h2 style="font-size:18px;margin-top:14px">Заявки</h2>${rs.map(r=>`<div class="row box" style="padding:12px 18px;margin-bottom:6px"><span>${esc(r.title)}</span><span class="pill ${r.status}">${ST[r.status]}</span></div>`).join('')||'<p class="mut">Заявок ще немає.</p>'}<button class="btn" style="margin-top:10px" data-act="close">Закрити</button>`)}
+
+/* ============ auth / session ============ */
+async function login(u){S.u=u;S.pc=null;st.set('session',u.id);S.view=u.role=='admin'?'admin':'app';S.tab='feed';A('login');if(st.get('pin_'+u.id)){st.set('quick',u.id);st.set('quickname',u.name+' '+u.surname)}render();toast('Вітаємо, '+u.name);
+ if(!st.get('pin_'+u.id)&&!st.get('pinask_'+u.id)){st.set('pinask_'+u.id,'1');setTimeout(()=>modal(`<h2>Встановити PIN-код?</h2><p class="mut">4-значний код дозволить швидко входити на цьому пристрої без пароля.</p><button class="btn" data-act="setpin">Встановити PIN-код</button><button class="btn ghost" data-act="close">Пізніше</button>`),500)}}
+const logout=()=>{A('logout');st.del('session');S.u=null;S.pin=null;S.am='in';render()};
+const csvOf=a=>['id,name,surname,email,taxId,passport,license,city,status',...a.map(u=>[u.id,u.name,u.surname,u.email,u.taxId,u.passport,u.license,u.city,u.status].map(v=>`"${v}"`).join(','))].join('\n');
+
+/* ============ events ============ */
+function inlineError(selector,message){
+ const el=$(selector);if(!el)return toast(message);let hint=el.nextElementSibling;
+ if(!hint||!hint.classList.contains('field-error')){hint=document.createElement('small');hint.className='field-error';hint.style.cssText='display:block;color:#c62828;margin:-6px 8px 10px';el.after(hint)}
+ hint.textContent=message;el.setAttribute('aria-invalid','true');el.focus();
+}
+async function auth(){const v=i=>($(i)?.value||'').trim(),em=v('#em').toLowerCase(),pw=$('#pw').value,up=S.am=='up';
+ if(!/^\S+@\S+\.\S+$/.test(em))return inlineError('#em','Введіть коректну адресу пошти.');if(pw.length<6)return inlineError('#pw','Пароль має містити щонайменше 6 символів.');
+ if(up&&(!v('#fn')||!v('#ln')))return inlineError('#fn','Введіть ім’я та прізвище.');if(up&&!(v('#bd')>'1900-01-01'&&new Date(v('#bd'))<=new Date()))return inlineError('#bd','Вкажіть коректну дату народження.');
+ try{if(up){if(await db.findByEmail(em))return toast('Цю пошту вже зареєстровано. Спробуйте увійти.');
+  const u={...mk(0,Date.now()%1e7),id:'u'+Date.now(),name:v('#fn'),surname:v('#ln'),email:em,status:'verified',flags:[],dob:v('#bd'),sex:v('#sx'),city:v('#ct')||'Київ',...(await hashPassword(pw))};u.docs=startDocs(u);delete u.pass;await db.createCitizen(u);A('signup',{id:u.id});login(u)}
+ else{const u=await db.findByEmail(em);if(!u)return toast('Невірна пошта або пароль.');
+   let ok=u.passHash?await verifyPassword(pw,u.passSalt,u.passHash):u.pass===pw;
+   if(!ok)return toast('Невірна пошта або пароль.');
+   if(!u.passHash){const h=await hashPassword(pw);await db.updateCitizen(u.id,{passHash:h.hash,passSalt:h.salt,pass:null});u.passHash=h.hash;u.passSalt=h.salt;delete u.pass}
+   login(u)}}catch(err){toast('Помилка бази даних: '+err.message)}}
+document.addEventListener('keydown',e=>{if(e.key=='Enter'&&e.target.closest('#af'))auth()});
+document.addEventListener('input',e=>{
+ const t=e.target,checks={uf_tax:[/^\d{10}$/,'РНОКПП має містити рівно 10 цифр.'],uf_pid:[/^\d{9}$/,'Номер паспорта має містити рівно 9 цифр.'],em:[/^\S+@\S+\.\S+$/,'Введіть коректну адресу пошти.'],uf_email:[/^\S+@\S+\.\S+$/,'Введіть коректну адресу пошти.'],pw:[/^.{6,}$/,'Пароль має містити щонайменше 6 символів.']};
+ if(checks[t.id]&&t.value){const [re,msg]=checks[t.id];let hint=t.nextElementSibling;if(!re.test(t.value)){if(!hint||!hint.classList.contains('field-error')){hint=document.createElement('small');hint.className='field-error';t.after(hint)}hint.textContent=msg;t.setAttribute('aria-invalid','true')}else{if(hint?.classList.contains('field-error'))hint.remove();t.removeAttribute('aria-invalid')}}
+ if(e.target.id=='sq'){S.sq=e.target.value;$('#sg').innerHTML=sgrid()}
+ if(e.target.id=='aq'){clearTimeout(S.t);S.t=setTimeout(()=>{S.q=e.target.value;S.page=0;admin().then(()=>{const i=$('#aq');i.focus();i.setSelectionRange(99,99)})},200)}});
+document.addEventListener('change',async e=>{if(e.target.id=='af2'){S.fs=e.target.value;S.page=0;admin()}
+ if(e.target.id=='imf'){try{const j=JSON.parse(await e.target.files[0].text()),rows=Array.isArray(j)?j:j?.citizens;if(!Array.isArray(rows))throw new Error('Файл має містити масив громадян або поле citizens.');const n=await db.importCitizens(rows);A('import',{n});toast(n+' громадян імпортовано');admin()}catch(err){toast('Помилка імпорту. Потрібен JSON-масив громадян.')}}
+ if(e.target.id=='scanfile'&&e.target.files?.[0]){try{const buf=await e.target.files[0].arrayBuffer(),digest=await crypto.subtle.digest('SHA-256',buf),hex=[...new Uint8Array(digest)].map(b=>b.toString(16).padStart(2,'0')).join('');$('#filehash').textContent='SHA-256: '+hex+' · Обчислено локально; для підтвердження потрібне порівняння з довіреним реєстром.'}catch(err){$('#filehash').textContent='Не вдалося обчислити SHA-256: '+err.message}}});
+document.addEventListener('click',async e=>{const el=e.target.closest('[data-act]');
+ if(!e.target.closest('.menu,.dots'))document.querySelectorAll('.menu.open').forEach(m=>m.classList.remove('open'));if(!el)return;
+ const a=el.dataset.act,v=el.dataset.v,k=el.dataset.k,slot=el.closest('.slot');
+ if(a=='lang'){st.set('lang',(st.get('lang')||'uk')==='uk'?'en':'uk');document.documentElement.lang=st.get('lang');render();requestAnimationFrame(()=>translateUI())}
+ else if(a=='close'){if(e.target!==el&&el.classList.contains('mo'))return;modal('')}
+ else if(a=='scanner')scannerV();else if(a=='scanverify')verifyScan();
+ else if(a=='copylink'){const link=el.dataset.link||'';try{await navigator.clipboard.writeText(link);toast('Посилання перевірки скопійовано')}catch{const t=document.createElement('textarea');t.value=link;document.body.append(t);t.select();try{document.execCommand('copy');toast('Посилання перевірки скопійовано')}catch{toast('Не вдалося скопіювати. Виділіть посилання вручну.')}t.remove()}}
+ else if(a=='amode'){S.am=v;render()}else if(a=='auth')auth();
+  else if(a=='passkeylogin'){try{
+   const u=await db.getCitizen(st.get('quick'));const saved=JSON.parse(st.get('passkey_'+st.get('quick'))||'{}');if(!u||!saved.id)throw new Error('Passkey не знайдено.');
+   const cred=await navigator.credentials.get({publicKey:{challenge:randomBytes(32),allowCredentials:[{type:'public-key',id:fromB64(saved.id)}],userVerification:'preferred',timeout:60000}});
+   if(!cred)throw new Error('Автентифікацію скасовано.');login(u);
+  }catch(err){const blocked=['NotAllowedError','SecurityError','NotSupportedError'].includes(err.name)||/permissions policy|cross-origin|not allowed|secure context/i.test(err.message||'');toast(blocked?'Passkey заблоковано політикою браузера, iframe або небезпечним контекстом. Відкрийте застосунок напряму через HTTPS і спробуйте знову.':'Passkey: '+(err.message||'Не вдалося виконати операцію.'))}}
+  else if(a=='notifications'){const ns=S.notifications;modal(`<h2>Сповіщення</h2>${ns.map(n=>`<div class="box"><b>${esc(n.title)}</b><p class="mut">${esc(n.message)}</p><small>${new Date(n.at).toLocaleString('uk-UA')}</small></div>`).join('')||'<p class="mut">Нових сповіщень немає.</p>'}<button class="btn ghost" data-act="close">Закрити</button>`)}
+ else if(a=='demo'){const u=await db.findByEmail(v=='a'?'admin@demo.ua':'olena@demo.ua');u?login(u):toast('Демо-акаунт не знайдено в цій базі.')}
+ else if(a=='view'){navigate({view:v})}else if(a=='nav'){navigate({tab:v})}
+ else if(a=='flip'){el.classList.toggle('flip')}
+ else if(a=='menu'){const m=slot.querySelector('.menu'),o=m.classList.contains('open');document.querySelectorAll('.menu.open').forEach(x=>x.classList.remove('open'));if(!o){m.classList.add('open');el.setAttribute('aria-expanded','true')}else el.setAttribute('aria-expanded','false')}
+ else if(a=='copy'){try{await navigator.clipboard.writeText(el.dataset.no);toast('Номер документа скопійовано')}catch(err){toast('Браузер заблокував копіювання. Виділіть номер на картці.')}}
+ else if(a=='refresh'){S.upd[k]=Date.now();S.qt[k]=Date.now();slot.querySelector('.qr').innerHTML=qrOf(k);slot.querySelector('.menu').classList.remove('open');toast('Дані оновлено');A('refresh',{k})}
+ else if(a=='pdf'){const d=docsOf(curP()).find(x=>x.k==k);if(!d)return toast('Документ не знайдено.');await makePDF(d.t,'Демо-витяг з цифрового документа', [...d.rows,['Номер документа',d.no],['Сформовано',new Date().toLocaleString('uk-UA')]],'dovira-'+k+'.pdf');A('extract',{k})}
+ else if(a=='cat'){S.cat=v;svc()}
+ else if(a=='svc'){const sv=SV.find(x=>x.id==v);if(ageOf(S.u)<(SVMIN[v]||0))return toast('Послуга доступна з '+SVMIN[v]+' років.');if(restricted(S.u)&&['Допомога та статуси','Бізнес і податки'].includes(sv.cat))return toast('Недоступно, поки акаунт позначено. Подайте апеляцію у стрічці.');S.w={id:v,step:1,purpose:SV.find(x=>x.id==v).opts[0]};wizard()}
+ else if(a=='wnext'){if(S.w.step==2){S.w.purpose=$('#wp').value;S.w.note=$('#wn').value;S.w.ok=$('#wc').checked;if(!S.w.ok)return toast('Підтвердьте дані, щоб продовжити.')}S.w.step++;wizard()}
+ else if(a=='wback'){if(S.w.step==2){S.w.purpose=$('#wp').value;S.w.note=$('#wn').value}S.w.step--;wizard()}
+ else if(a=='wsub'){const s=SV.find(x=>x.id==S.w.id);el.disabled=true;
+  try{const r=await db.createRequest({id:'r'+Date.now(),userId:S.u.id,userName:S.u.surname+' '+S.u.name,serviceId:s.id,title:s.t,status:s.auto?'issued':'pending',note:S.w.purpose+(S.w.note?': '+S.w.note:''),serial:'UA-'+Date.now().toString(36).toUpperCase(),createdAt:Date.now(),timeline:[{status:s.auto?'issued':'pending',label:s.auto?'Подано та видано':'Подано громадянином',at:Date.now()}]});
+  A('request',{id:r.id});modal('');S.tab='feed';render();toast(s.auto?s.t+' видано. Відкрийте її у вхідних.':'Заявку надіслано. Стежте за нею у вхідних.')}catch(err){toast('Не вдалося надіслати: '+err.message);el.disabled=false}}
+ else if(a=='appeal'){modal(`<h2>Апеляція</h2><p class="mut">Поясніть, чому позначку варто зняти. Її розгляне працівник реєстру.</p><textarea id="ap" placeholder="Ваше пояснення"></textarea><button class="btn" data-act="appsub">Надіслати апеляцію</button><button class="btn ghost" data-act="close">Скасувати</button>`)}
+ else if(a=='appsub'){const t=$('#ap').value.trim();if(t.length<10)return toast('Напишіть коротке пояснення (від 10 символів).');await db.createRequest({id:'r'+Date.now(),userId:S.u.id,userName:S.u.surname+' '+S.u.name,serviceId:'appeal',title:'Апеляція: '+S.u.flags.map(f=>f.type).join(', '),status:'pending',note:t,serial:'UA-'+Date.now().toString(36).toUpperCase(),createdAt:Date.now(),timeline:[{status:'pending',label:'Апеляцію подано',at:Date.now()}]});A('appeal');modal('');render();toast('Апеляцію надіслано. Стежте за нею у вхідних.')}
+ else if(a=='cert'){const r=(await db.listRequests(S.u.id)).find(x=>x.id==v);certV(r)}
+ else if(a=='passkey'){try{
+   if(!window.PublicKeyCredential||!navigator.credentials)throw new Error('Цей браузер не підтримує WebAuthn.');
+   const challenge=randomBytes(32),uid=new TextEncoder().encode(S.u.id.padEnd(16,'_').slice(0,64));
+   const cred=await navigator.credentials.create({publicKey:{challenge,rp:{name:'Довіра (демо)'},user:{id:uid,name:S.u.email,displayName:S.u.name+' '+S.u.surname},pubKeyCredParams:[{type:'public-key',alg:-7},{type:'public-key',alg:-257}],authenticatorSelection:{authenticatorAttachment:'platform',userVerification:'preferred'},timeout:60000,attestation:'none'}});
+   if(!cred)throw new Error('Створення passkey скасовано.');
+   st.set('passkey_'+S.u.id,JSON.stringify({id:toB64(cred.rawId),createdAt:Date.now()}));toast('Passkey зареєстровано на цьому пристрої.');
+  }catch(err){const blocked=['NotAllowedError','SecurityError','NotSupportedError'].includes(err.name)||/permissions policy|cross-origin|not allowed/i.test(err.message||'');toast(blocked?'Passkey заблоковано політикою браузера або середовища. Спробуйте відкрити сайт напряму у вкладці на HTTPS.':'Passkey: '+(err.message||'Не вдалося виконати операцію.'))}}
+  else if(a=='setpin'){modal('');S.pin={mode:'set',uid:S.u.id,buf:''};render()}else if(a=='rmpin'){st.del('pin_'+S.u.id);if(st.get('quick')==S.u.id)st.del('quick');toast('PIN-код видалено');menu()}
+ else if(a=='lock'){S.pin={mode:'unlock',uid:S.u.id,buf:'',tries:0};render()}else if(a=='pcancel'||a=='qback'){S.pin=null;render()}else if(a=='plogout'){logout()}
+ else if(a=='quick'){S.pin={mode:'quick',uid:st.get('quick'),buf:'',tries:0};render()}else if(a=='closev'){location.hash=''}
+ else if(a=='adddoc')docMarket();else if(a=='kids'){if(S.u?.role!=='citizen'||ageOf(S.u)<18)return toast('Керування дітьми доступне лише повнолітнім громадянам.');kidsV()}else if(a=='prof'){S.pc=v||null;docs()}
+ else if(a=='reqdoc'){const P=curP(),have=hasDocs(P),e=eligible(P,v,have);if(!e.ok)return toast(e.why);const inst=INSTANT.includes(v);
+  try{await db.createRequest({id:'r'+Date.now(),userId:S.u.id,userName:P.surname+' '+P.name,kid:S.pc||null,serviceId:'doc:'+v,title:'Замовлення: '+CARDS[v]+(S.pc?' ('+P.name+')':''),status:inst?'issued':'pending',note:'',serial:'UA-'+Date.now().toString(36).toUpperCase(),createdAt:Date.now()});
+  if(inst)await saveDocs([...have,v]);A('docreq',{k:v});modal('');if(S.tab=='docs')docs();toast(inst?'Документ додано до гаманця':'Заявку надіслано. Очікуйте рішення реєстру.')}catch(err){toast('Помилка бази даних: '+err.message)}}
+ else if(a=='addkid'){const n=$('#kn').value.trim(),b=$('#kb').value,k={...mk(0,Date.now()%1e7),id:'k'+Date.now(),name:n,surname:S.u.surname,dob:b,sex:$('#ks').value,status:'verified',flags:[],role:'child'};
+  if(!n||!b)return toast('Вкажіть ім’я та дату народження.');if(new Date(b)>new Date()||ageOf(k)>=18)return toast('Додати можна дитину віком до 18 років.');
+  k.docs=startDocs(k);const K=[...(S.u.children||[]),k];await db.updateCitizen(S.u.id,{children:K});S.u.children=K;A('kid_add');kidsV();toast('Дитину додано')}
+ else if(a=='rmkid'){const K=(S.u.children||[]).filter(k=>k.id!=v);await db.updateCitizen(S.u.id,{children:K});S.u.children=K;if(S.pc==v)S.pc=null;kidsV()}
+ else if(a=='pcert'){const r=(await db.listRequests(S.u.id)).find(x=>x.id==v);await makePDF(r.title,'Номер заявки: '+r.serial,[['Видано',r.userName],['Номер',r.serial],['Дата',new Date(r.createdAt).toLocaleString('uk-UA')],['Статус',ST[r.status]]],'dovira-request-'+r.id+'.pdf')}
+ else if(a=='key'){const p=S.pin;p.buf=v=='del'?p.buf.slice(0,-1):(p.buf+v).slice(0,4);
+  if(p.buf.length==4){const h=await hashPin(p.buf);
+   if(p.mode=='set'){st.set('pin_'+p.uid,JSON.stringify(h));st.set('quick',p.uid);st.set('quickname',S.u.name+' '+S.u.surname);S.pin=null;toast('PIN-код збережено')}
+   else if(await (async()=>{try{const saved=JSON.parse(st.get('pin_'+p.uid)||'{}');return saved.hash?await verifyPassword(p.buf,saved.salt,saved.hash):String(hash('pin'+p.uid+p.buf))===String(st.get('pin_'+p.uid))}catch{return false}})()){const m=p.mode;S.pin=null;if(m=='quick'){const u=await db.getCitizen(p.uid);if(u)return login(u)}}
+   else{p.buf='';p.tries=(p.tries||0)+1;if(p.tries>=5){st.del('pin_'+p.uid);st.del('quick');S.pin=null;toast('Забагато спроб. Увійдіть за паролем.');if(S.u)logout()}else toast('Невірний PIN-код. Залишилось спроб: '+(5-p.tries))}}render()}
+ else if(a=='logout')logout();
+ else if(a=='mydata'){download('my-data.json',JSON.stringify({profile:S.u,requests:await db.listRequests(S.u.id)},null,2),'application/json')}
+ else if(a=='atab'){S.atab=v;admin()}else if(a=='pg'){S.page+=+v;admin()}
+ else if(a=='inspect')inspect(v);
+ else if(a=='deck')deckTo(dIdx()+ +v);else if(a=='deckto')deckTo(+v);
+ else if(a=='theme'){st.set('theme',v=='toggle'?(document.documentElement.dataset.theme=='dark'?'light':'dark'):v);applyTheme();if(S.u&&S.view=='app'&&S.tab=='menu')menu()}
+ else if(a=='add')userForm({...mk(0,Date.now()%1e7+Math.floor(Math.random()*1e5)),name:'',surname:'',email:'',photo:'',status:'verified',flags:[],role:'citizen'},true);
+ else if(a=='edit')userForm(await db.getCitizen(v),false);
+ else if(a=='usave')usave();
+ else if(a=='pickph')$('#ph').click();else if(a=='rmph'){S.pic='';$('#pv').innerHTML=av({...S.ef.base,photo:''})}
+ else if(a=='del'){if(v==S.u.id)return toast('Не можна видалити акаунт, під яким ви увійшли.');modal(`<h2>Видалити громадянина?</h2><p class="mut">Акаунт і його заявки буде видалено назавжди. Дію не можна скасувати.</p><button class="btn" data-act="delok" data-v="${v}">Видалити назавжди</button><button class="btn ghost" data-act="close">Скасувати</button>`)}
+ else if(a=='delok'){try{await db.deleteCitizen(v);A('delete',{id:v});modal('');toast('Громадянина видалено');admin()}catch(err){toast('Помилка бази даних: '+err.message)}}
+ else if(a=='mph')$('#mphf').click();
+ else if(a=='chpw')modal(`<h2>Змінити пароль</h2><input id="cp_old" type="password" placeholder="Поточний пароль"><input id="cp_new" type="password" placeholder="Новий пароль (від 6 символів)"><button class="btn" data-act="cpsave">Оновити пароль</button><button class="btn ghost" data-act="close">Скасувати</button>`)
+ else if(a=='cpsave'){const valid=S.u.passHash?await verifyPassword($('#cp_old').value,S.u.passSalt,S.u.passHash):$('#cp_old').value===S.u.pass;if(!valid)return inlineError('#cp_old','Поточний пароль невірний.');const n=$('#cp_new').value;if(n.length<6)return inlineError('#cp_new','Новий пароль має містити щонайменше 6 символів.');const h=await hashPassword(n);await db.updateCitizen(S.u.id,{passHash:h.hash,passSalt:h.salt,pass:null});S.u.passHash=h.hash;S.u.passSalt=h.salt;delete S.u.pass;A('password');modal('');toast('Пароль оновлено')}
+ else if(a=='reset')modal(`<h2>Скинути демо-дані?</h2><p class="mut">У цьому браузері буде видалено створені акаунти, зміни, заявки, позначки та журнал, а початкові дані відновлено.</p><button class="btn" data-act="resetok">Скинути все</button><button class="btn ghost" data-act="close">Скасувати</button>`)
+ else if(a=='resetok'){try{await db.reset();st.del('session');location.reload()}catch(err){toast(err.message)}}
+ else if(a=='flag'){const r=$('#fr').value.trim(),t=$('#ft').value;if(!r)return toast('Вкажіть причину. Її побачить громадянин.');const u=await db.getCitizen(v);await db.updateCitizen(v,{flags:[...(u.flags||[]),{type:t,reason:r,at:Date.now(),by:S.u.email}],status:'flagged'});A('flag',{target:v,type:t});toast('Позначку додано');inspect(v);admin()}
+ else if(a=='unflag'){const u=await db.getCitizen(v),fl=(u.flags||[]).filter((_,i)=>i!=el.dataset.i);await db.updateCitizen(v,{flags:fl,status:fl.length?'flagged':'verified'});A('unflag',{target:v});toast('Позначку знято');inspect(v);admin()}
+ else if(a=='setst'){const u=await db.getCitizen(v);if((u.flags||[]).length)return toast('Спочатку зніміть позначки.');await db.updateCitizen(v,{status:el.dataset.d});A('status',{target:v,s:el.dataset.d});toast('Статус: '+ST[el.dataset.d]);inspect(v);admin()}
+ else if(a=='dec'){const rq=(await db.listRequests(null)).find(x=>x.id==v);const decision=el.dataset.d,stamp=Date.now();
+   await db.updateRequest(v,{status:decision,timeline:[...(rq.timeline||[{status:'pending',label:'Подано громадянином',at:rq.createdAt}]),{status:decision,label:decision=='approved'?'Схвалено працівником реєстру':'Відхилено працівником реєстру',at:stamp}]});
+   notify('Оновлення заявки',`${rq.title}: ${ST[decision]}`,rq.userId);if(rq.serviceId=='appeal'&&el.dataset.d=='approved'){await db.updateCitizen(rq.userId,{flags:[],status:'verified'});A('flags_cleared',{target:rq.userId})}if(rq.serviceId.startsWith('doc:')&&el.dataset.d=='approved'){const u=await db.getCitizen(rq.userId),k=rq.serviceId.slice(4);if(rq.kid)await db.updateCitizen(u.id,{children:(u.children||[]).map(c=>c.id==rq.kid?{...c,docs:[...new Set([...hasDocs(c),k])]}:c)});else await db.updateCitizen(u.id,{docs:[...new Set([...hasDocs(u),k])]});A('doc_granted',{target:u.id})}A('decision',{id:v,d:el.dataset.d});toast('Заявку: '+ST[el.dataset.d]);admin()}
+ else if(a=='exj'){download('registry.json',JSON.stringify(await db.exportAll(),null,2),'application/json');A('export',{f:'json'})}
+ else if(a=='exc'){download('citizens.csv',csvOf((await db.exportAll()).citizens),'text/csv');A('export',{f:'csv'})}
+ else if(a=='imp')$('#imf').click()});
+
+/* ============ live ticker: QR countdown + "updated" label ============ */
+setInterval(()=>document.querySelectorAll('.slot').forEach(s=>{const k=s.dataset.k;let left=180-Math.floor((Date.now()-S.qt[k])/1e3);
+ if(left<=0){S.qt[k]=Date.now();left=180;s.querySelector('.qr').innerHTML=qrOf(k)}
+ s.querySelector('.tm').textContent=Math.floor(left/60)+':'+String(left%60).padStart(2,'0');s.querySelector('.upd').textContent='Оновлено '+ago(S.upd[k])}),1000);
+
+/* ============ bilingual UI layer (Ukrainian / English) ============ */
+const I18N={
+ 'Вхід':'Sign in','Реєстрація':'Create account','Створити акаунт':'Create account','Увійти':'Sign in','Ім’я':'First name','Прізвище':'Last name','Дата народження':'Date of birth','Місто проживання':'City of residence','Електронна пошта':'Email address','Пароль (від 6 символів)':'Password (6+ characters)','Документи та публічні послуги — завжди з тобою.':'Documents and public services — always with you.','Держава':'Government','у твоєму телефоні.':'in your phone.','або':'or','Стрічка':'Activity','Документи':'Documents','Послуги':'Services','Меню':'Menu','Застосунок':'App','Реєстр':'Registry','Сповіщення':'Notifications','Верифіковано':'Verified','Вітаємо,':'Welcome,','Діти та родина':'Children & Family','Змінити фото профілю':'Change profile photo','Змінити пароль':'Change password','Налаштувати вхід за біометрією / Passkey':'Set up biometric / passkey sign-in','Встановити PIN-код':'Set PIN','Змінити PIN-код':'Change PIN','Видалити PIN-код':'Remove PIN','Заблокувати зараз':'Lock now','Завантажити мої дані (JSON)':'Download my data (JSON)','Вийти':'Sign out','Світла':'Light','Темна':'Dark','Системна':'System','Додати документ':'Add document','Пошук послуг':'Search services','Усі':'All','Назад':'Back','Далі':'Next','Закрити':'Close','Скасувати':'Cancel','Заявки':'Requests','Громадяни':'Citizens','Журнал дій':'Audit log','Аналітика':'Analytics','Копіювати номер документа':'Copy document number','Завантажити витяг (PDF)':'Download extract (PDF)','Оновити дані':'Refresh data','Мої':'Mine','Поки немає дій. Тут фіксуються дії громадян та адміністраторів.':'No activity yet. Citizen and administrator actions will appear here.','Немає заявок у черзі. Нові заявки громадян з’являться тут.':'No requests in the queue. New citizen requests will appear here.','Нових сповіщень немає.':'No new notifications.','Оновлення заявки':'Request update','Підтвердьте дані, щоб продовжити.':'Confirm the details to continue.','Нічого не знайдено за запитом':'No results found for','Відкрити застосунок':'Open app','Завантажити витяг':'Download extract','Переглянути довідку':'View certificate',
+ 'Демо-акаунти: olena@demo.ua / demo1234, admin@demo.ua / admin1234':'Demo accounts: olena@demo.ua / demo1234, admin@demo.ua / admin1234','Продовжити з Dovira.Sign (демо)':'Continue with Dovira.Sign (demo)','Відкрити Реєстр як адміністратор (демо)':'Open Registry as administrator (demo)','Демо-акаунти':'Demo accounts','Держава':'Government','у твоєму телефоні.':'in your phone.','Документи та публічні послуги — завжди з тобою.':'Documents and public services — always with you.','Швидкий вхід за PIN-кодом:':'Quick sign-in with PIN:','Увійти за Passkey / біометрією':'Sign in with passkey / biometrics','Чоловік / хлопчик':'Male / boy','Жінка / дівчинка':'Female / girl','Хлопчик':'Boy','Дівчинка':'Girl','Керування дітьми доступне лише повнолітнім громадянам.':'Family management is available only to adult citizens.','Функція «Діти та родина» доступна лише повнолітнім громадянам.':'Children & Family is available only to adult citizens.','Додати дитину':'Add child','Видалити':'Delete','Додати':'Add','Додати громадянина':'Add citizen','Усі статуси':'All statuses','Копіювати посилання перевірки':'Copy verification link','Перевірити':'Verify','Перевірити QR / токен':'Verify QR / token','Симулятор перевірки':'Verification simulator','Вставте повне посилання з QR-коду або токен після':'Paste the full QR link or the token after','Перевірити файл за SHA-256':'Verify file with SHA-256','Витяг сформовано':'Extract generated','Демо-витяг з цифрового документа':'Demo extract from digital document','Демо-витяг. Не є офіційним державним документом.':'Demo extract. Not an official government document.','Номер документа':'Document number','Сформовано':'Generated','Тип':'Type','Власник':'Owner','Номер':'Number','Створено':'Created','Посилання перевірки скопійовано':'Verification link copied','Послуга':'Service','Підтверджую, що мої дані правильні':'I confirm that my information is correct','Надіслати заявку':'Submit request','Заявку надіслано. Очікуйте рішення реєстру.':'Request submitted. Please wait for registry review.','Документ додано до гаманця':'Document added to wallet','Вкажіть ім’я та дату народження.':'Enter the child’s name and date of birth.','Додати можна дитину віком до 18 років.':'Only children under 18 can be added.','Документи вже у гаманці.':'All available documents are already in your wallet.','Демо WebAuthn: підпис автентифікатора не перевіряється сервером. Не використовуйте для production-автентифікації.':'WebAuthn demo: authenticator assertions are not verified by a server. Do not use for production authentication.','Демо-перевірка: підпис не є криптографічним.':'Demo verification: this is not a cryptographic signature.',
+ 'Вік':'Age','Початкові документи':'Starting documents','Решту можна замовити пізніше.':'Other documents can be requested later.','Електронний медичний запис':'Electronic medical record','Свідоцтво про народження':'Birth certificate','Картка платника податків':'Taxpayer card','ID-картка':'ID card','Посвідчення водія':'Driver licence','Свідоцтво про реєстрацію ТЗ':'Vehicle registration certificate','Закордонний паспорт':'International passport','Студентський квиток':'Student ID','Пенсійне посвідчення':'Pension certificate','Військово-обліковий документ':'Military registration document','Довідка ВПО':'IDP certificate','Цифровий документ':'Digital document','Додати документ':'Add document','Документ не знайдено.':'Document not found.','Пошук: ім’я, РНОКПП, номер документа':'Search: name, tax ID, document number','Усі статуси':'All statuses','Деталі':'Details','Ім’я дитини':'Child’s first name','Хлопчик':'Boy','Дівчинка':'Girl','Поки немає документів.':'No documents yet.','Оформіть документи, яких у вас ще немає':'Apply for documents you do not have yet','Заявка на розгляді':'Application under review','Видається одразу':'Issued immediately','Потрібне підтвердження реєстру':'Registry approval required','Замовити':'Apply','очікує':'pending','видано':'issued','схвалено':'approved','відхилено':'rejected','верифіковано':'verified','позначено':'flagged','Вікові групи':'Age groups','Статуси':'Statuses','Документи у громадян':'Citizen documents','Знайдено громадян':'Citizens found','Заявок у черзі':'Requests in queue','Ім’я':'First name','РНОКПП':'Tax ID','Паспорт':'Passport','Місто':'City','Статус':'Status','Підтвердити':'Approve','Відхилити':'Reject','Експорт JSON':'Export JSON','Експорт CSV':'Export CSV','Імпорт JSON':'Import JSON','Додати громадянина':'Add citizen','Немає заявок у черзі. Нові заявки громадян з’являться тут.':'No requests in the queue. New citizen requests will appear here.','Демо-акаунт не знайдено в цій базі.':'Demo account was not found in this database.','Невірна пошта або пароль.':'Incorrect email or password.','Введіть коректну адресу пошти.':'Enter a valid email address.','Пароль має містити щонайменше 6 символів.':'Password must contain at least 6 characters.','Вкажіть коректну дату народження.':'Enter a valid date of birth.','Цю пошту вже зареєстровано. Спробуйте увійти.':'This email is already registered. Please sign in.','Документ додано до гаманця':'Document added to wallet','Заявку надіслано. Стежте за нею у вхідних.':'Request submitted. Track it in your inbox.','Заявку надіслано. Очікуйте рішення реєстру.':'Request submitted. Await registry decision.','Копіювати посилання перевірки':'Copy verification link','Вставте посилання або токен перевірки':'Paste a verification link or token','Хеш буде обчислено локально у браузері. Сам по собі хеш не підтверджує справжність без довіреного еталона.':'The hash is calculated locally. A hash alone does not prove authenticity without a trusted reference.','ДЕМО — НЕ Є ОФІЦІЙНИМ ДЕРЖАВНИМ ДОКУМЕНТОМ':'DEMO — NOT AN OFFICIAL GOVERNMENT DOCUMENT','Відкрийте застосунок напряму через HTTPS і спробуйте знову.':'Open the app directly over HTTPS and try again.','Passkey зареєстровано на цьому пристрої.':'Passkey registered on this device.','Passkey заблоковано політикою браузера, iframe або небезпечним контекстом.':'Passkey blocked by browser policy, iframe restrictions, or an insecure context.','Додайте дитину, щоб керувати її документами у вкладці «Документи».':'Add a child to manage their documents in the Documents tab.','Видано на ім’я':'Issued to','Примітка':'Note','Дійсність можна перевірити за QR-кодом.':'Validity can be checked using the QR code.','Демо-акаунти:':'Demo accounts:','Застосунок':'App','Реєстр':'Registry','Вхід':'Sign in','Реєстрація':'Registration','Довідки та витяги':'Certificates & extracts','Допомога та статуси':'Support & statuses','Бізнес і податки':'Business & taxes','Транспорт і штрафи':'Transport & fines','Витяг про судимість':'Criminal record extract','Довідка про доходи':'Income statement','Реєстрація місця проживання':'Residence registration','Дублікат документа':'Document replacement','Реєстрація ФОП':'Sole proprietor registration','Сплата податків':'Tax payment','Сплата штрафів':'Pay fines','Передати авто':'Share a vehicle','єПідтримка':'eSupport','Грошова допомога':'Financial assistance','Облік переселенців':'Displacement registration','Для роботи чи візи':'For work or visa','З податкової':'From the tax office','Зміна адреси':'Change of address','Втрата чи пошкодження':'Lost or damaged','Відкрити бізнес':'Start a business','Єдиний податок, ПДФО':'Single tax, personal income tax','Штрафи за порушення ПДР':'Traffic violations','Тимчасове користування':'Temporary use'
+
+};
+Object.assign(I18N,{
+ 'Держава у твоєму телефоні.':'Government in your phone.',
+ 'Швидкий вхід за PIN-кодом:':'Quick sign-in with PIN:',
+ 'Відкрийте застосунок напряму через HTTPS і спробуйте знову.':'Open the app directly over HTTPS and try again.',
+ 'Змінити тему':'Change theme','◐ Тема':'◐ Theme','Дії з документом':'Document actions','Попередній':'Previous','Наступний':'Next',
+ 'Цифровий документ':'Digital document','Верифіковано':'Verified','Оновлено':'Updated','Діє':'Valid for','торкніться, щоб повернути':'click to flip',
+ 'Гортайте, перетягуйте мишею або користуйтеся клавішами ← →. Торкніться картки, щоб перевернути.':'Swipe, drag with your mouse, or use the ← → keys. Select a card to flip it.',
+ 'Вхідні':'Inbox','у роботі':'in progress','готово':'completed','Тут поки порожньо. Ваші заявки та їх результати з’являться тут.':'Nothing here yet. Your requests and their results will appear here.',
+ 'До послуг':'Browse services','Вигляд':'Appearance','адміністратор':'administrator','громадянин':'citizen','Скинути демо-дані':'Reset demo data',
+ 'Придумайте PIN-код':'Create a PIN','Введіть PIN-код':'Enter your PIN','За цими фільтрами нікого не знайдено.':'No citizens match these filters.',
+ 'Усі незакриті штрафи':'All outstanding fines','На один день':'For one day','На тиждень':'For one week',
+ 'Цю послугу видають миттєво.':'This service is issued instantly.','Заявку розгляне працівник реєстру.':'A registry officer will review this request.',
+ 'Додайте примітку (необов’язково)':'Add a note (optional)','Дані підтягнуто з вашого профілю.':'Your profile information has been prefilled.',
+ 'Для':'For','Мета':'Purpose','Видано на ім’я':'Issued to','Витяг сформовано':'Extract generated',
+ 'Введіть ім’я та прізвище.':'Enter your first and last name.','Поточний пароль':'Current password','Новий пароль (від 6 символів)':'New password (at least 6 characters)',
+ 'Поточний пароль невірний.':'The current password is incorrect.','Новий пароль має містити щонайменше 6 символів.':'The new password must contain at least 6 characters.',
+ 'Пароль оновлено':'Password updated','PIN-код збережено':'PIN saved','PIN-код видалено':'PIN removed','Невірний PIN-код. Залишилось спроб:':'Incorrect PIN. Attempts remaining:',
+ 'Забагато спроб. Увійдіть за паролем.':'Too many attempts. Sign in with your password.',
+ 'Вкажіть причину. Її побачить громадянин.':'Enter a reason. The citizen will be able to see it.',
+ 'Позначку додано':'Flag added','Позначку знято':'Flag removed','Спочатку зніміть позначки.':'Remove the flags first.',
+ 'Заявку:':'Request:','Заявку надіслано. Стежте за нею у вхідних.':'Request submitted. Track it in your inbox.',
+ 'Не вдалося надіслати:':'Could not submit:','Помилка бази даних:':'Database error:',
+ 'Помилка імпорту. Потрібен JSON-масив громадян.':'Import failed. A JSON array of citizens is required.',
+ 'Громадянина видалено':'Citizen deleted','Не можна видалити акаунт, під яким ви увійшли.':'You cannot delete the account you are currently using.',
+ 'Видалити громадянина?':'Delete citizen?','Акаунт і його заявки буде видалено назавжди. Дію не можна скасувати.':'The account and its requests will be permanently deleted. This cannot be undone.',
+ 'Видалити назавжди':'Delete permanently','Скасувати':'Cancel','Скинути все':'Reset everything',
+ 'У цьому браузері буде видалено створені акаунти, зміни, заявки, позначки та журнал, а початкові дані відновлено.':'Created accounts, changes, requests, flags, and logs in this browser will be deleted and the original demo data restored.',
+ 'Вкажіть ім’я та дату народження.':'Enter the child’s first name and date of birth.',
+ 'Додати можна дитину віком до 18 років.':'Only a child under 18 can be added.',
+ 'Дитину додано':'Child added','Дитину видалено':'Child removed','Додати дитину':'Add child',
+ 'Заявок ще немає.':'There are no requests yet.','Заявки на розгляді':'Requests under review',
+ 'Немає нових сповіщень.':'No new notifications.','Сповіщення':'Notifications','Журнал дій':'Audit log',
+ 'Знайдено громадян':'Citizens found','Заявок у черзі':'Requests in queue','Додати громадянина':'Add citizen',
+ 'За цими фільтрами нікого не знайдено.':'No one was found with these filters.',
+ 'Ім’я дитини':'Child’s first name','Хлопчик':'Boy','Дівчинка':'Girl','Додати':'Add','Видалити':'Delete',
+ 'Очікуйте рішення реєстру.':'Please wait for the registry decision.','Очікуйте рішення реєстру':'Please wait for the registry decision',
+ 'Підтвердіть дані, щоб продовжити.':'Confirm your details to continue.',
+ 'Вкажіть коректну адресу пошти.':'Enter a valid email address.','Введіть коректну адресу пошти.':'Enter a valid email address.',
+ 'Введіть коректну дату народження.':'Enter a valid date of birth.','Вкажіть коректну дату народження.':'Enter a valid date of birth.',
+ 'Введіть ім’я та прізвище.':'Enter your first and last name.',
+ 'Демо-акаунт не знайдено в цій базі.':'Demo account not found in this database.',
+ 'Помилка бази даних':'Database error','Документи вже у гаманці.':'All available documents are already in your wallet.',
+ 'Тут поки порожньо.':'Nothing here yet.','Пошук послуг':'Search services','Усі':'All',
+ 'Пошук: ім’я, РНОКПП, номер документа':'Search: name, tax ID, or document number',
+ 'Поки немає документів.':'No documents yet.','Оформіть документи, яких у вас ще немає':'Apply for documents you do not have yet',
+ 'Заявка на розгляді':'Request under review','Видається одразу':'Issued immediately','Потрібне підтвердження реєстру':'Registry approval required',
+ 'Деталі':'Details','Номер документа скопійовано':'Document number copied','Браузер заблокував копіювання. Виділіть номер на картці.':'The browser blocked copying. Select the number on the card.',
+ 'Дані оновлено':'Data refreshed','Відкрийте її у вхідних.':'Open it in your inbox.',
+ 'Послуга доступна з':'This service is available from age','років.':'years old.',
+ 'Недоступно, поки акаунт позначено. Подайте апеляцію у стрічці.':'Unavailable while the account is flagged. Submit an appeal in the activity feed.',
+ 'Напишіть коротке пояснення (від 10 символів).':'Write a short explanation (at least 10 characters).',
+ 'Апеляцію надіслано. Стежте за нею у вхідних.':'Appeal submitted. Track it in your inbox.',
+ 'Підтверджено Довірою':'Verified by Dovira','Дійсність можна перевірити за QR-кодом.':'Validity can be checked using the QR code.',
+ 'Сканер':'Scanner','Перевірити файл за SHA-256':'Verify file with SHA-256',
+ 'Код не розпізнано або контрольна сума не збігається.':'Code not recognized or checksum mismatch.',
+ 'Термін дії коду минув.':'The code has expired.','Демо-код коректний':'Demo code is valid',
+ 'Увага: це локальна демонстраційна перевірка, не державний реєстр і не криптографічний підпис.':'Warning: this is a local demo check, not a government registry or cryptographic signature.',
+ 'Демо-витяг. Не є офіційним державним документом.':'Demo extract. Not an official government document.',
+ 'Поле':'Field','Значення':'Value','Сформовано:':'Generated:','PDF підготовлено.':'PDF prepared.',
+ 'PDF-бібліотеки недоступні. Завантажено HTML-версію витягу.':'PDF libraries unavailable. Downloaded an HTML version of the extract.',
+ 'Попередній перегляд витягу':'Extract preview','Не вдалося завантажити файл. Відкрито попередній перегляд.':'Could not download the file. Opened a preview instead.',
+ 'Поточний статус':'Current status','Громадянин':'Citizen','Заявка':'Request','Рішення':'Decision',
+ 'Профіль':'Profile','Мої':'Mine','Вхід':'Sign in','Реєстрація':'Create account',
+ 'Застосунок':'App','Реєстр':'Registry','Послуги':'Services','Документи':'Documents','Стрічка':'Activity','Меню':'Menu'
+});
+Object.assign(I18N,{
+ 'Оскаржити рішення':'Appeal decision','Зняти':'Remove','Статуси':'Statuses','Подано та видано':'Submitted and issued','Подано громадянином':'Submitted by citizen',
+ 'Ім’я та прізвище обов’язкові.':'First and last name are required.','Цю пошту вже використовує інший акаунт.':'This email is already used by another account.',
+ 'Громадянина створено':'Citizen created','Зміни збережено':'Changes saved','Фото профілю оновлено':'Profile photo updated',
+ 'Не вдалося прочитати зображення. Спробуйте JPG або PNG.':'Could not read the image. Try JPG or PNG.',
+ 'РНОКПП має містити рівно 10 цифр.':'Tax ID must contain exactly 10 digits.',
+ 'Номер паспорта має містити рівно 9 цифр.':'Passport number must contain exactly 9 digits.',
+ 'Файл має містити масив громадян або поле citizens.':'The file must contain an array of citizens or a citizens field.',
+ ' громадян імпортовано':' citizens imported',' · Обчислено локально; для підтвердження потрібне порівняння з довіреним реєстром.':' · Calculated locally; confirmation requires comparison with a trusted registry.',
+ 'Не вдалося обчислити SHA-256: ':'Could not calculate SHA-256: ','Посилання перевірки скопійовано':'Verification link copied',
+ 'Не вдалося скопіювати. Виділіть посилання вручну.':'Could not copy. Select the link manually.',
+ 'Passkey не знайдено.':'Passkey not found.','Автентифікацію скасовано.':'Authentication cancelled.',
+ 'Не вдалося виконати операцію.':'The operation could not be completed.',
+ 'Цей браузер не підтримує WebAuthn.':'This browser does not support WebAuthn.',
+ 'Довіра (демо)':'Dovira (demo)','Створення passkey скасовано.':'Passkey creation cancelled.',
+ 'Passkey заблоковано політикою браузера або середовища. Спробуйте відкрити сайт напряму у вкладці на HTTPS.':'Passkey blocked by browser or environment policy. Open the site directly in an HTTPS tab and try again.',
+ 'Керування дітьми доступне лише повнолітнім громадянам.':'Family management is available only to adult citizens.',
+ 'Замовлення:':'Order:','Номер заявки:':'Request number:','Видано':'Issued','Номер':'Number','Статус':'Status',
+ 'Схвалено працівником реєстру':'Approved by registry officer','Відхилено працівником реєстру':'Rejected by registry officer',
+ 'Оновлено ':'Updated ','Вітаємо, ':'Welcome, ','Апеляція: ':'Appeal: ','Статус: ':'Status: ',
+ 'Поясніть, чому позначку варто зняти. Її розгляне працівник реєстру.':'Explain why the flag should be removed. A registry officer will review your appeal.',
+ 'Ваше пояснення':'Your explanation','Встановити PIN-код':'Set PIN','Пізніше':'Later',
+ 'Завантажити мої дані (JSON)':'Download my data (JSON)','Змінити фото профілю':'Change profile photo',
+ 'Налаштувати вхід за біометрією / Passkey':'Set up biometric / passkey sign-in',
+ 'Картка платника податків':'Taxpayer card','Закордонний паспорт':'International passport',
+ 'Свідоцтво про реєстрацію ТЗ':'Vehicle registration certificate','Військово-обліковий документ':'Military registration document',
+ 'Довідка ВПО':'IDP certificate','Витяг про судимість':'Criminal record extract','Довідка про доходи':'Income statement',
+ 'Реєстрація місця проживання':'Residence registration','Дублікат документа':'Document replacement',
+ 'Реєстрація ФОП':'Sole proprietor registration','Сплата податків':'Tax payment','Сплата штрафів':'Pay fines',
+ 'Передати авто':'Share a vehicle','єПідтримка':'eSupport','Грошова допомога':'Financial assistance',
+ 'Облік переселенців':'Displacement registration','Для роботи чи візи':'For work or visa',
+ 'З податкової':'From the tax office','Зміна адреси':'Change of address','Втрата чи пошкодження':'Lost or damaged',
+ 'Відкрити бізнес':'Start a business','Єдиний податок, ПДФО':'Single tax, personal income tax',
+ 'Штрафи за порушення ПДР':'Traffic violations','Тимчасове користування':'Temporary use',
+ 'Довідки та витяги':'Certificates & extracts','Транспорт і штрафи':'Transport & fines',
+ 'Підтвердити':'Approve','Відхилити':'Reject','Експорт JSON':'Export JSON','Експорт CSV':'Export CSV','Імпорт JSON':'Import JSON',
+ 'Вікові групи':'Age groups','Документи у громадян':'Documents held by citizens','Підтверджую, що мої дані правильні':'I confirm that my information is correct',
+ 'Додайте примітку (необов’язково)':'Add a note (optional)','Для роботи чи візи':'For work or visa',
+ 'З податкової':'From the tax office','Зміна адреси':'Change of address','Відкрити бізнес':'Start a business'
+});
+const t=(key)=>{const lang=st.get('lang')||'uk';return lang==='en'?(I18N[key]??key):key};
+function translateString(value){if((st.get('lang')||'uk')!=='en')return value;let out=String(value??'');for(const [uk,en] of Object.entries(I18N).sort((a,b)=>b[0].length-a[0].length))if(out.includes(uk))out=out.split(uk).join(en);return out;}
+const translateUI=()=>{const en=(st.get('lang')||'uk')==='en';document.documentElement.lang=en?'en':'uk';if(!en)return;document.documentElement.lang=en?'en':'uk';if(!en)return;for(const root of [document.querySelector('#app'),document.querySelector('#modal')]){if(!root)continue;const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let n;while(n=w.nextNode()){let value=translateString(n.nodeValue);if(value!==n.nodeValue)n.nodeValue=value}root.querySelectorAll('[placeholder],[title],[aria-label]').forEach(x=>['placeholder','title','aria-label'].forEach(a=>{if(x.hasAttribute(a)){let value=translateString(x.getAttribute(a));x.setAttribute(a,value)}}))}};
+const langObserver=new MutationObserver(()=>{if(st.get('lang')==='en')translateUI()});for(const root of [document.querySelector('#app'),document.querySelector('#modal')])if(root)langObserver.observe(root,{childList:true,subtree:true,characterData:true});
+/* ============ avatars, theme ============ */
+const ini=u=>((u.name||'?')[0]+((u.surname||'')[0]||'')).toUpperCase();
+const phFail=i=>i.replaceWith(Object.assign(document.createElement('span'),{className:'av',textContent:i.dataset.i}));
+const av=u=>u.photo?`<img src="${esc(u.photo)}" alt="" draggable="false" data-i="${ini(u)}" onerror="phFail(this)">`:`<span class="av" style="background:hsl(${hash(u.id||u.email||'x')%360} 55% 82%)">${ini(u)}</span>`;
+const readPhoto=f=>new Promise((ok,no)=>{const r=new FileReader();r.onerror=no;r.onload=()=>{const i=new Image();i.onerror=no;i.onload=()=>{const c=document.createElement('canvas'),m=Math.min(i.width,i.height);c.width=c.height=240;c.getContext('2d').drawImage(i,(i.width-m)/2,(i.height-m)/2,m,m,0,0,240,240);ok(c.toDataURL('image/jpeg',.8))};i.src=r.result};r.readAsDataURL(f)});
+const applyTheme=()=>{const t=st.get('theme')||'system';document.documentElement.dataset.theme=t=='dark'||(t=='system'&&matchMedia('(prefers-color-scheme:dark)').matches)?'dark':'light'};
+document.documentElement.lang=st.get('lang')||'uk';applyTheme();try{matchMedia('(prefers-color-scheme:dark)').addEventListener('change',applyTheme)}catch(e){}
+
+/* ============ PC support: arrows, drag-to-scroll, keyboard, Esc, "/" ============ */
+const dIdx=()=>{const d=$('#deck');return Math.max(0,Math.min(d.children.length-1,Math.round(d.scrollLeft/(d.children[0].offsetWidth+14))))};
+const deckTo=i=>{const d=$('#deck');if(!d)return;const c=d.children[Math.max(0,Math.min(d.children.length-1,i))];d.scrollTo({left:c.offsetLeft-(d.clientWidth-c.offsetWidth)/2,behavior:'smooth'})};
+document.addEventListener('scroll',e=>{if(e.target.id=='deck'){const i=dIdx();document.querySelectorAll('#dn button').forEach((b,j)=>b.classList.toggle('on',i==j))}},true);
+let dg=null;
+document.addEventListener('pointerdown',e=>{const d=e.target.closest('#deck');if(d&&e.pointerType=='mouse'&&!e.target.closest('.dots,.menu'))dg={d,x:e.clientX,l:d.scrollLeft,m:0}});
+document.addEventListener('pointermove',e=>{if(!dg)return;const dx=e.clientX-dg.x;if(Math.abs(dx)>5&&!dg.m){dg.m=1;dg.d.style.scrollSnapType='none';dg.d.style.cursor='grabbing'}if(dg.m)dg.d.scrollLeft=dg.l-dx});
+document.addEventListener('pointerup',()=>{if(!dg)return;const g=dg;if(g.m){g.d.style.scrollSnapType='';g.d.style.cursor='';deckTo(dIdx())}setTimeout(()=>{if(dg===g)dg=null})});
+document.addEventListener('click',e=>{if(dg?.m){e.stopPropagation();e.preventDefault()}},true);
+document.addEventListener('keydown',e=>{const t=e.target,typing=/INPUT|TEXTAREA|SELECT/.test(t.tagName),open=$('#modal').innerHTML;
+ if(e.key=='Escape'&&open)modal('');
+ if((e.key=='Enter'||e.key==' ')&&t.classList?.contains('card')){e.preventDefault();t.classList.toggle('flip')}
+ if(S.pin){const b=e.key=='Backspace'?'del':e.key;document.querySelector('.kp [data-act="key"][data-v="'+b+'"]')?.click();return}if(typing||open||!S.u)return;
+ if(S.view=='app'&&S.tab=='docs'&&$('#deck')&&(e.key=='ArrowRight'||e.key=='ArrowLeft')){e.preventDefault();deckTo(dIdx()+(e.key=='ArrowRight'?1:-1))}
+ if(e.key=='/'&&S.view=='admin'&&$('#aq')){e.preventDefault();$('#aq').focus()}});
+
+/* ============ admin: add / edit citizen form ============ */
+function userForm(u,isNew){S.pic=u.photo||'';S.ef={id:u.id,isNew,base:u};
+ const f=(id,l,v,t='text')=>`<small>${l}</small><input id="uf_${id}" type="${t}" value="${esc(v)}">`;
+ modal(`<h2>${isNew?'Додати громадянина':'Редагувати громадянина'}</h2><div class="row" style="justify-content:flex-start;gap:14px;margin-bottom:12px"><span class="avs lg" id="pv">${av(u)}</span><div><button class="btn sm ghost" data-act="pickph">Завантажити фото</button> <button class="btn sm ghost" data-act="rmph">Прибрати</button><input type="file" id="ph" accept="image/*" hidden></div></div>
+ ${f('name','Ім’я',u.name)}${f('surname','Прізвище',u.surname)}${f('email','Електронна пошта',u.email,'email')}${f('pass',isNew?'Пароль':'Новий пароль (порожньо — без змін)',isNew?'demo1234':'')}${f('city','Місто',u.city)}${f('dob','Дата народження',u.dob,'date')}${f('tax','РНОКПП (10 цифр)',u.taxId)}${f('pid','Номер паспорта (9 цифр)',u.passport)}${f('lic','Посвідчення водія',u.license)}${f('plate','Номерний знак',u.vehicle.plate)}
+ <small>Документи (адмін може видати будь-який)</small><div class="tools" style="margin:6px 0 12px">${Object.keys(CARDS).map(k=>`<label style="font-size:13px;white-space:nowrap"><input type="checkbox" class="dk" value="${k}" ${hasDocs(u).includes(k)?'checked':''}>${CARDS[k]}</label>`).join('')}</div><small>Роль</small><select id="uf_role"><option value="citizen" ${u.role=='citizen'?'selected':''}>громадянин</option><option value="admin" ${u.role=='admin'?'selected':''}>адміністратор</option></select>
+ <button class="btn" data-act="usave">${isNew?'Створити':'Зберегти зміни'}</button><button class="btn ghost" data-act="close">Скасувати</button>`)}
+async function usave(){const g=i=>$('#uf_'+i).value.trim(),e=S.ef,em=g('email').toLowerCase();
+ if(!g('name')||!g('surname'))return toast('Ім’я та прізвище обов’язкові.');
+ if(!/^\S+@\S+\.\S+$/.test(em))return inlineError('#uf_email','Введіть коректну адресу пошти.');
+ if(!/^\d{10}$/.test(g('tax')))return inlineError('#uf_tax','РНОКПП має містити рівно 10 цифр.');
+ if(!/^\d{9}$/.test(g('pid')))return inlineError('#uf_pid','Номер паспорта має містити рівно 9 цифр.');
+ if(e.isNew&&g('pass').length<6)return toast('Пароль має містити щонайменше 6 символів.');
+ try{const ex=await db.findByEmail(em);if(ex&&ex.id!==e.id)return toast('Цю пошту вже використовує інший акаунт.');
+ const p={name:g('name'),surname:g('surname'),email:em,city:g('city'),dob:g('dob'),taxId:g('tax'),passport:g('pid'),license:g('lic'),role:$('#uf_role').value,photo:S.pic,vehicle:{...e.base.vehicle,plate:g('plate')},docs:[...document.querySelectorAll('.dk:checked')].map(x=>x.value).filter(k=>eligible({...e.base,...p},k,[]).ok)};
+ if(e.isNew){const h=await hashPassword(g('pass')),created={...e.base,...p,id:'u'+Date.now(),...h,status:'verified',flags:[]};delete created.pass;await db.createCitizen(created);A('create',{email:em})}
+ else{if(g('pass')){const h=await hashPassword(g('pass'));p.passHash=h.hash;p.passSalt=h.salt;p.pass=null}await db.updateCitizen(e.id,p);A('edit',{id:e.id})}
+ modal('');toast(e.isNew?'Громадянина створено':'Зміни збережено');admin()}catch(err){toast('Помилка бази даних: '+err.message)}}
+document.addEventListener('change',async e=>{const id=e.target.id;if(id!='ph'&&id!='mphf')return;const f=e.target.files[0];if(!f)return;
+ try{const p=await readPhoto(f);if(id=='ph'){S.pic=p;$('#pv').innerHTML=av({...S.ef.base,photo:p})}else{await db.updateCitizen(S.u.id,{photo:p});S.u.photo=p;A('photo');toast('Фото профілю оновлено');menu()}}catch(err){toast('Не вдалося прочитати зображення. Спробуйте JPG або PNG.')}});
+/* auto-lock after 2 minutes idle when a PIN is set */
+let idle=Date.now();['pointerdown','keydown'].forEach(ev=>addEventListener(ev,()=>idle=Date.now()));
+setInterval(()=>{if(S.u&&!S.pin&&st.get('pin_'+S.u.id)&&Date.now()-idle>12e4){S.pin={mode:'unlock',uid:S.u.id,buf:'',tries:0};render()}},5000);
+
+addEventListener('hashchange',()=>render());
+addEventListener('popstate',e=>{if(e.state){S.tab=e.state.tab||S.tab;S.view=e.state.view||S.view;S.atab=e.state.atab||S.atab}render()});
+try{const bc=new BroadcastChannel('dovira-events');bc.onmessage=e=>{const n=e.data;if(n&&n.userId===S.u?.id){S.notifications.unshift(n);toast(n.title+': '+n.message);if(S.tab==='feed'&&S.view==='app')feed()}}}catch{}
+document.addEventListener('keydown',e=>{
+ const dialog=$('#modal .sheet');if(!dialog)return;
+ if(e.key==='Escape'){modal('');return}
+ if(e.key==='Tab'){
+  const els=[...dialog.querySelectorAll('button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex="0"]')].filter(x=>x.offsetParent!==null);
+  if(!els.length){e.preventDefault();dialog.focus();return}
+  const first=els[0],last=els[els.length-1];
+  if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}
+  else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}
+ }
+});
+/* ============ boot ============ */
+(async()=>{try{S.notifications=(await idbGet('db_notifications'))||[]}catch{S.notifications=jget('db_notifications',[])}try{if(!history.state)history.replaceState({tab:S.tab,view:S.view,atab:S.atab},'',location.href);const id=st.get('session');if(id){S.u=await db.getCitizen(id);if(S.u){S.view=S.u.role=='admin'?'admin':'app';if(st.get('pin_'+S.u.id))S.pin={mode:'unlock',uid:S.u.id,buf:'',tries:0}}}}catch(e){}render()})();
+</script></body></html>
